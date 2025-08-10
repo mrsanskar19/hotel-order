@@ -9,14 +9,19 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { CreditCard, User } from 'lucide-react';
+import { CreditCard, User, Phone, StickyNote } from 'lucide-react';
 import AppContainer from '@/components/AppContainer';
 import BottomNav from '@/components/BottomNav';
-import type { OrderStatus } from '@/lib/types';
+import type { OrderStatus, PaymentMethod } from '@/lib/types';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  roomNumber: z.string().min(1, { message: 'Room number is required.' }),
+  mobile: z.string().regex(/^\d{10}$/, { message: 'Please enter a valid 10-digit mobile number.' }),
+  tableNumber: z.string().min(1, { message: 'Table number is required.' }),
+  paymentMethod: z.enum(['UPI', 'Card', 'Cash'], { required_error: 'Please select a payment method.'}),
+  note: z.string().optional(),
 });
 
 type CheckoutFormValues = z.infer<typeof formSchema>;
@@ -29,7 +34,9 @@ export default function CheckoutPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      roomNumber: '',
+      mobile: '',
+      tableNumber: '',
+      note: '',
     },
   });
 
@@ -47,7 +54,10 @@ export default function CheckoutPage() {
       orderDate: new Date().toISOString(),
       orderNumber,
       customerName: values.name,
-      roomNumber: values.roomNumber,
+      mobile: values.mobile,
+      tableNumber: values.tableNumber,
+      paymentMethod: values.paymentMethod as PaymentMethod,
+      note: values.note,
       status: orderStatus.status,
     };
     // Store with a unique key for history
@@ -60,7 +70,6 @@ export default function CheckoutPage() {
   };
 
   if (cartItems.length === 0) {
-    // Redirect to menu if cart is empty, maybe show a message
     router.replace('/menu');
     return null;
   }
@@ -92,14 +101,40 @@ export default function CheckoutPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
+                 <FormField
                   control={form.control}
-                  name="roomNumber"
+                  name="mobile"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Room Number</FormLabel>
+                      <FormLabel>Mobile Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., 204" {...field} />
+                        <Input placeholder="9876543210" {...field} type="tel" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tableNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Table Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 12" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="note"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Special Instructions (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="e.g., Make it less spicy" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -113,10 +148,46 @@ export default function CheckoutPage() {
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center"><CreditCard className="mr-2 h-5 w-5 text-primary"/> Payment</CardTitle>
-                <CardDescription>Your order will be charged to your room.</CardDescription>
+                <CardDescription>Select your preferred payment method.</CardDescription>
             </CardHeader>
             <CardContent>
-                 <div className="flex justify-between items-center text-lg font-bold">
+                 <FormField
+                  control={form.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                          form="checkout-form"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="UPI" />
+                            </FormControl>
+                            <FormLabel className="font-normal">UPI</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Card" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Credit/Debit Card</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Cash" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Cash</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <div className="flex justify-between items-center text-lg font-bold mt-6">
                     <span>Total</span>
                     <span className="text-primary">₹{cartTotal.toFixed(2)}</span>
                 </div>

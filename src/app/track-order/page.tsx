@@ -22,12 +22,14 @@ export default function TrackOrderPage() {
 
     const updateOrderStatus = useCallback((status: OrderStatus) => {
         setOrderStatus(status);
-        if (status.orderNumber) {
+        if (typeof window !== 'undefined' && status.orderNumber) {
             localStorage.setItem(`orderStatus_${status.orderNumber}`, JSON.stringify(status));
         }
     }, []);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const storedOrder = localStorage.getItem('lastOrder');
         if (storedOrder) {
             const parsedOrder: Order = JSON.parse(storedOrder);
@@ -35,20 +37,28 @@ export default function TrackOrderPage() {
 
             const storedStatus = localStorage.getItem(`orderStatus_${parsedOrder.orderNumber}`);
             if (storedStatus) {
-                const parsedStatus = JSON.parse(storedStatus);
-                 // If the order was already delivered, don't restart the process
+                const parsedStatus: OrderStatus = JSON.parse(storedStatus);
                  if(parsedStatus.status === 'Delivered') {
                     setOrderStatus(parsedStatus);
                 } else {
-                    // otherwise, find current status and recalculate time
                     const currentStepIndex = statusSteps.findIndex(step => step.status === parsedStatus.status);
-                    const newEstimatedTime = new Date(new Date(parsedStatus.startTime).getTime() + statusSteps[currentStepIndex].duration);
-                    
-                    const updatedStatus: OrderStatus = {
-                        ...parsedStatus,
-                        estimatedDeliveryTime: newEstimatedTime.toISOString()
-                    };
-                    updateOrderStatus(updatedStatus);
+                    if (currentStepIndex === -1 || !parsedStatus.startTime) {
+                        // If status is weird, reset it
+                        const initialStatus: OrderStatus = {
+                            orderNumber: parsedOrder.orderNumber,
+                            status: 'Confirmed',
+                            startTime: new Date().toISOString(),
+                            estimatedDeliveryTime: new Date(Date.now() + statusSteps[0].duration).toISOString(),
+                        };
+                        updateOrderStatus(initialStatus);
+                    } else {
+                        const newEstimatedTime = new Date(new Date(parsedStatus.startTime).getTime() + statusSteps[currentStepIndex].duration);
+                        const updatedStatus: OrderStatus = {
+                            ...parsedStatus,
+                            estimatedDeliveryTime: newEstimatedTime.toISOString()
+                        };
+                        updateOrderStatus(updatedStatus);
+                    }
                 }
             } else {
                  const initialStatus: OrderStatus = {
@@ -128,7 +138,7 @@ export default function TrackOrderPage() {
         );
     }
     
-    const currentStepIndex = statusSteps.findIndex(step => step.status === orderStatus?.status);
+    const currentStepIndex = orderStatus ? statusSteps.findIndex(step => step.status === orderStatus.status) : -1;
 
     return (
         <AppContainer>
@@ -152,11 +162,11 @@ export default function TrackOrderPage() {
                      <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border -z-10"></div>
                     {statusSteps.map((step, index) => (
                         <div key={step.status} className="flex items-center space-x-4 relative">
-                            <div className={`flex items-center justify-center w-12 h-12 rounded-full z-10 ${index <= currentStepIndex ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                            <div className={`flex items-center justify-center w-12 h-12 rounded-full z-10 transition-colors duration-300 ${index <= currentStepIndex ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                                 <step.icon className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className={`font-bold ${index <= currentStepIndex ? 'text-foreground' : 'text-muted-foreground'}`}>{step.status}</h3>
+                                <h3 className={`font-bold transition-colors duration-300 ${index <= currentStepIndex ? 'text-foreground' : 'text-muted-foreground'}`}>{step.status}</h3>
                                 <p className="text-sm text-muted-foreground">{step.description}</p>
                             </div>
                         </div>

@@ -14,13 +14,18 @@ export interface CartItem extends MenuItem {
   quantity: number;
 }
 
+export type PaymentMethod = 'UPI' | 'Card' | 'Cash';
+
 export interface Order {
   items: CartItem[];
   total: number;
   orderDate: string;
   orderNumber: string;
   customerName: string;
-  roomNumber: string;
+  tableNumber: string;
+  mobile: string;
+  note?: string;
+  paymentMethod: PaymentMethod;
   status: 'Confirmed' | 'Preparing' | 'Out for Delivery' | 'Delivered';
 }
 
@@ -36,5 +41,5 @@ export interface OrderStatus {
     orderNumber: string;
     status: 'Confirmed' | 'Preparing' | 'Out for Delivery' | 'Delivered';
     estimatedDeliveryTime: string;
-    startTime: string;
+    startTime?: string;
 }

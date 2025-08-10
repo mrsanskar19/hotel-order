@@ -18,11 +18,13 @@ export function OrderHistory() {
 
   useEffect(() => {
     try {
-      const allOrders = Object.keys(localStorage)
-        .filter(key => key.startsWith('order_'))
-        .map(key => JSON.parse(localStorage.getItem(key) as string))
-        .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
-      setOrders(allOrders);
+      if (typeof window !== 'undefined') {
+        const allOrders = Object.keys(localStorage)
+            .filter(key => key.startsWith('order_'))
+            .map(key => JSON.parse(localStorage.getItem(key) as string))
+            .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+        setOrders(allOrders);
+      }
     } catch (error) {
       console.error("Failed to parse orders from localStorage", error);
     } finally {
@@ -34,10 +36,23 @@ export function OrderHistory() {
     return <p>Loading order history...</p>
   }
 
+  const getPaymentBadgeVariant = (paymentMethod: Order['paymentMethod']) => {
+    switch (paymentMethod) {
+      case 'Card':
+        return 'secondary';
+      case 'UPI':
+        return 'default';
+      case 'Cash':
+        return 'outline';
+      default:
+        return 'secondary';
+    }
+  }
+
   return (
     <Card className="mt-4">
       <CardHeader>
-        <CardTitle>Order History</CardTitle>
+        <CardTitle>Order & Payment History</CardTitle>
         <CardDescription>A list of all past orders placed by customers.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -48,10 +63,13 @@ export function OrderHistory() {
             {orders.map(order => (
                 <AccordionItem value={order.orderNumber} key={order.orderNumber}>
                     <AccordionTrigger>
-                        <div className="flex justify-between w-full pr-4">
+                        <div className="flex justify-between w-full pr-4 items-center">
                             <div className="text-left">
                                 <p className="font-bold">{order.orderNumber}</p>
-                                <p className="text-sm text-muted-foreground">{order.customerName} - Room {order.roomNumber}</p>
+                                <p className="text-sm text-muted-foreground">{order.customerName} - Table {order.tableNumber}</p>
+                            </div>
+                             <div className="text-center">
+                                <Badge variant={getPaymentBadgeVariant(order.paymentMethod)}>{order.paymentMethod}</Badge>
                             </div>
                             <div className="text-right">
                                 <p className="font-bold">₹{(order.total * 1.1).toFixed(2)}</p>
@@ -60,6 +78,13 @@ export function OrderHistory() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent>
+                        <div className="mb-4">
+                            <p className="font-semibold">Customer Details:</p>
+                            <p className="text-sm text-muted-foreground">
+                                Name: {order.customerName} | Mobile: {order.mobile} | Table: {order.tableNumber}
+                            </p>
+                            {order.note && <p className="text-sm text-muted-foreground italic mt-1">Note: {order.note}</p>}
+                        </div>
                         <Table>
                             <TableHeader>
                                 <TableRow>
