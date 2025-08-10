@@ -43,7 +43,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="p-4 animation-fade-in pb-20">
       <header className="flex justify-between items-center mb-6">
-        <h1 className="font-headline text-2xl text-primary">Menu Management</h1>
+        <h1 className="font-headline text-3xl text-primary">Menu Management</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={handleAddNew}>

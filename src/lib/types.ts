@@ -6,6 +6,7 @@ export interface MenuItem {
   imageUrl: string;
   category: string;
   isAvailable: boolean;
+  'data-ai-hint'?: string;
 }
 
 export interface CartItem extends MenuItem {
@@ -16,4 +17,7 @@ export interface Order {
   items: CartItem[];
   total: number;
   orderDate: string;
+  orderNumber: string;
+  customerName: string;
+  roomNumber: string;
 }

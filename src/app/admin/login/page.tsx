@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppContainer from '@/components/AppContainer';
-import { LogIn } from 'lucide-react';
+import { LogIn, Hotel } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -23,18 +23,23 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <AppContainer className="justify-center p-4">
-      <div className="animation-fade-in w-full">
-        <Card>
+    <AppContainer className="justify-center p-4 bg-gray-100">
+      <div className="w-full max-w-md mx-auto">
+        <div className="text-center mb-8">
+            <Hotel className="mx-auto h-12 w-12 text-primary" />
+            <h1 className="text-4xl font-headline text-primary mt-4">The Grand Hotel</h1>
+            <p className="text-muted-foreground">Admin Portal</p>
+        </div>
+        <Card className="shadow-lg animate-fade-in">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-headline">Admin Login</CardTitle>
-            <CardDescription>Enter your credentials to manage the menu.</CardDescription>
+            <CardTitle className="text-2xl font-headline">Admin Login</CardTitle>
+            <CardDescription>Please enter your credentials to continue</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="admin@example.com" required />
+                <Input id="email" type="email" placeholder="admin@thegrandhotel.com" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

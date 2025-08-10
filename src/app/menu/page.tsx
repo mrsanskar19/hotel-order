@@ -5,7 +5,7 @@ import MenuItemCard from '@/components/MenuItemCard';
 import AdBanner from '@/components/AdBanner';
 import { useCart } from '@/hooks/useCart';
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Hotel } from 'lucide-react';
 
 export default function MenuPage() {
   const { menuItems } = useMenu();
@@ -15,10 +15,13 @@ export default function MenuPage() {
 
   return (
     <div className="animation-fade-in">
-      <header className="sticky top-0 bg-background/80 backdrop-blur-sm z-10 p-4 border-b flex justify-between items-center">
-        <h1 className="font-headline text-2xl text-primary">QR Menu Go</h1>
+      <header className="sticky top-0 bg-background/90 backdrop-blur-sm z-10 p-4 border-b flex justify-between items-center">
+        <div className="flex items-center">
+          <Hotel className="w-8 h-8 text-primary" />
+          <h1 className="font-headline text-2xl text-primary ml-2">The Grand Hotel</h1>
+        </div>
         <Link href="/cart" className="relative">
-          <ShoppingCart className="w-6 h-6 text-foreground" />
+          <ShoppingCart className="w-7 h-7 text-foreground" />
           {cartCount > 0 && (
             <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-primary rounded-full">
               {cartCount}
@@ -32,7 +35,7 @@ export default function MenuPage() {
 
         {categories.map(category => (
           <section key={category}>
-            <h2 className="font-headline text-2xl font-bold mb-4">{category}</h2>
+            <h2 className="font-headline text-3xl font-bold mb-4 text-gray-800">{category}</h2>
             <div className="grid grid-cols-1 gap-4">
               {availableItems
                 .filter(item => item.category === category)
