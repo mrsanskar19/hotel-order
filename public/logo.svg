@@ -1,0 +1,15 @@
+<svg width="200" height="50" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg" fill="hsl(var(--primary))">
+  <style>
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .tagline {
+      font-family: 'PT Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+    }
+  </style>
+  <text x="0" y="30" class="title">QR Menu Go</text>
+</svg>
