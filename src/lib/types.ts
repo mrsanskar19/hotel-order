@@ -36,4 +36,5 @@ export interface OrderStatus {
     orderNumber: string;
     status: 'Confirmed' | 'Preparing' | 'Out for Delivery' | 'Delivered';
     estimatedDeliveryTime: string;
+    startTime: string;
 }

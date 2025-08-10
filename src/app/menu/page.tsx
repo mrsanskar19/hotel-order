@@ -5,7 +5,7 @@ import { useMenu } from '@/hooks/useMenu';
 import MenuItemCard from '@/components/MenuItemCard';
 import { useCart } from '@/hooks/useCart';
 import Link from 'next/link';
-import { ShoppingCart, Hotel } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Carousel,
@@ -15,6 +15,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import Image from 'next/image';
+import { AppLogo } from '@/components/AppLogo';
 
 export default function MenuPage() {
   const { menuItems } = useMenu();
@@ -31,7 +32,7 @@ export default function MenuPage() {
     <div className="animation-fade-in">
       <header className="sticky top-0 bg-background/90 backdrop-blur-sm z-10 p-4 border-b flex justify-between items-center">
         <div className="flex items-center">
-          <Hotel className="w-8 h-8 text-primary" />
+          <AppLogo className="w-8 h-8 text-primary" />
           <h1 className="font-headline text-2xl text-primary ml-2">The Grand Hotel</h1>
         </div>
         <Link href="/cart" className="relative">

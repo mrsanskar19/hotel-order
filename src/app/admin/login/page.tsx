@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppContainer from '@/components/AppContainer';
-import { LogIn, Hotel } from 'lucide-react';
+import { LogIn } from 'lucide-react';
+import { AppLogo } from '@/components/AppLogo';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function AdminLoginPage() {
     <AppContainer className="justify-center p-4 bg-gray-100">
       <div className="w-full max-w-md mx-auto">
         <div className="text-center mb-8">
-            <Hotel className="mx-auto h-12 w-12 text-primary" />
+            <AppLogo className="mx-auto h-12 w-12 text-primary" />
             <h1 className="text-4xl font-headline text-primary mt-4">The Grand Hotel</h1>
             <p className="text-muted-foreground">Admin Portal</p>
         </div>

@@ -1,13 +1,14 @@
 import Link from 'next/link';
-import { QrCode, Hotel } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AppContainer from '@/components/AppContainer';
+import { AppLogo } from '@/components/AppLogo';
 
 export default function ScanPage() {
   return (
     <AppContainer className="flex flex-col justify-center items-center p-8 text-center animation-fade-in">
       <div className="mb-8">
-        <Hotel className="mx-auto h-16 w-16 text-primary" />
+        <AppLogo className="mx-auto h-16 w-16 text-primary" />
         <h1 className="text-5xl font-headline text-primary mt-4">The Grand Hotel</h1>
         <p className="text-muted-foreground mt-2 text-lg">Your Culinary Journey Starts Here</p>
       </div>

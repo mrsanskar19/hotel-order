@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart, ArrowRight, Hotel } from 'lucide-react';
+import { ShoppingCart, ArrowRight } from 'lucide-react';
+import { AppLogo } from '@/components/AppLogo';
 
 export default function CartPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -20,7 +21,7 @@ export default function CartPage() {
   return (
     <div className="animation-fade-in flex flex-col h-full">
        <header className="p-4 border-b flex items-center justify-center text-center relative">
-          <Hotel className="w-8 h-8 text-primary" />
+          <AppLogo className="w-8 h-8 text-primary" />
           <h1 className="font-headline text-2xl text-primary ml-2">Your Order</h1>
       </header>
 

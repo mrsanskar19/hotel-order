@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import type { Order } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import AppContainer from '@/components/AppContainer';
-import { Printer, Hotel } from 'lucide-react';
+import { Printer } from 'lucide-react';
+import { AppLogo } from '@/components/AppLogo';
 
 export default function BillPage() {
   const [order, setOrder] = useState<Order | null>(null);
@@ -35,7 +36,7 @@ export default function BillPage() {
     <AppContainer className="bg-white">
       <main className="p-6 animation-fade-in flex-grow" id="bill-content">
         <div className="text-center mb-8">
-          <Hotel className="mx-auto h-10 w-10 text-primary" />
+          <AppLogo className="mx-auto h-10 w-10 text-primary" />
           <h1 className="text-3xl font-headline font-bold mt-2">The Grand Hotel</h1>
           <p className="text-sm text-muted-foreground">Thank you for your patronage!</p>
         </div>

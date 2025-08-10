@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Order, OrderStatus } from '@/lib/types';
 import AppContainer from '@/components/AppContainer';
 import BottomNav from '@/components/BottomNav';
@@ -8,10 +8,10 @@ import { Progress } from '@/components/ui/progress';
 import { ChefHat, CookingPot, Bike, PartyPopper, Timer } from 'lucide-react';
 
 const statusSteps = [
-    { status: 'Confirmed', icon: ChefHat, description: 'Your order has been confirmed.' },
-    { status: 'Preparing', icon: CookingPot, description: 'The chefs are preparing your meal.' },
-    { status: 'Out for Delivery', icon: Bike, description: 'Your order is on its way to your table.' },
-    { status: 'Delivered', icon: PartyPopper, description: 'Enjoy your meal!' },
+    { status: 'Confirmed', icon: ChefHat, description: 'Your order has been confirmed.', duration: 2 * 60 * 1000 },
+    { status: 'Preparing', icon: CookingPot, description: 'The chefs are preparing your meal.', duration: 8 * 60 * 1000 },
+    { status: 'Out for Delivery', icon: Bike, description: 'Your order is on its way to your table.', duration: 5 * 60 * 1000 },
+    { status: 'Delivered', icon: PartyPopper, description: 'Enjoy your meal!', duration: 0 },
 ];
 
 export default function TrackOrderPage() {
@@ -19,6 +19,13 @@ export default function TrackOrderPage() {
     const [orderStatus, setOrderStatus] = useState<OrderStatus | null>(null);
     const [timeRemaining, setTimeRemaining] = useState('');
     const [progress, setProgress] = useState(0);
+
+    const updateOrderStatus = useCallback((status: OrderStatus) => {
+        setOrderStatus(status);
+        if (status.orderNumber) {
+            localStorage.setItem(`orderStatus_${status.orderNumber}`, JSON.stringify(status));
+        }
+    }, []);
 
     useEffect(() => {
         const storedOrder = localStorage.getItem('lastOrder');
@@ -28,25 +35,39 @@ export default function TrackOrderPage() {
 
             const storedStatus = localStorage.getItem(`orderStatus_${parsedOrder.orderNumber}`);
             if (storedStatus) {
-                setOrderStatus(JSON.parse(storedStatus));
+                const parsedStatus = JSON.parse(storedStatus);
+                 // If the order was already delivered, don't restart the process
+                 if(parsedStatus.status === 'Delivered') {
+                    setOrderStatus(parsedStatus);
+                } else {
+                    // otherwise, find current status and recalculate time
+                    const currentStepIndex = statusSteps.findIndex(step => step.status === parsedStatus.status);
+                    const newEstimatedTime = new Date(new Date(parsedStatus.startTime).getTime() + statusSteps[currentStepIndex].duration);
+                    
+                    const updatedStatus: OrderStatus = {
+                        ...parsedStatus,
+                        estimatedDeliveryTime: newEstimatedTime.toISOString()
+                    };
+                    updateOrderStatus(updatedStatus);
+                }
             } else {
                  const initialStatus: OrderStatus = {
                     orderNumber: parsedOrder.orderNumber,
                     status: 'Confirmed',
-                    estimatedDeliveryTime: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+                    startTime: new Date().toISOString(),
+                    estimatedDeliveryTime: new Date(Date.now() + statusSteps[0].duration).toISOString(),
                 };
-                setOrderStatus(initialStatus);
-                localStorage.setItem(`orderStatus_${parsedOrder.orderNumber}`, JSON.stringify(initialStatus));
+                updateOrderStatus(initialStatus);
             }
         }
-    }, []);
+    }, [updateOrderStatus]);
     
     useEffect(() => {
-        if (!orderStatus) return;
+        if (!orderStatus || !orderStatus.startTime) return;
 
-        const currentStepIndex = statusSteps.findIndex(step => step.status === orderStatus.status);
-        
         const interval = setInterval(() => {
+            const currentStepIndex = statusSteps.findIndex(step => step.status === orderStatus.status);
+            
             if (orderStatus.status === 'Delivered') {
                 setTimeRemaining('Delivered');
                 setProgress(100);
@@ -64,29 +85,32 @@ export default function TrackOrderPage() {
                  const newStatus: OrderStatus = { 
                      ...orderStatus, 
                      status: nextStatus,
-                     estimatedDeliveryTime: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+                     startTime: new Date().toISOString(),
+                     estimatedDeliveryTime: new Date(Date.now() + statusSteps[nextStepIndex].duration).toISOString()
                  };
 
                  if(nextStatus === 'Delivered') {
                      newStatus.estimatedDeliveryTime = new Date().toISOString();
                  }
-
-                 setOrderStatus(newStatus);
-                 localStorage.setItem(`orderStatus_${orderStatus.orderNumber}`, JSON.stringify(newStatus));
+                updateOrderStatus(newStatus);
             } else {
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                setTimeRemaining(`${minutes}m ${seconds}s`);
+                setTimeRemaining(`${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2, '0')}`);
+                
+                const stepDuration = statusSteps[currentStepIndex].duration;
+                const elapsedTimeInStep = stepDuration - distance;
+                const stepProgress = (elapsedTimeInStep / stepDuration) * 100;
 
-                const totalDuration = 15 * 60 * 1000;
-                const elapsedTime = totalDuration - distance;
-                const progressPercentage = (elapsedTime / totalDuration) * 100 / statusSteps.length * (currentStepIndex + 1);
-                setProgress(Math.min(progressPercentage, 100));
+                const totalProgressBeforeCurrent = (currentStepIndex / (statusSteps.length -1)) * 100;
+                const progressInCurrent = stepProgress / (statusSteps.length-1);
+                
+                setProgress(Math.min(totalProgressBeforeCurrent + progressInCurrent, 100));
             }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [orderStatus]);
+    }, [orderStatus, updateOrderStatus]);
 
 
     if (!lastOrder) {
@@ -124,10 +148,11 @@ export default function TrackOrderPage() {
                     </CardContent>
                 </Card>
 
-                <div className="mt-8 space-y-8">
+                <div className="mt-8 space-y-4 relative">
+                     <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border -z-10"></div>
                     {statusSteps.map((step, index) => (
-                        <div key={step.status} className="flex items-center space-x-4">
-                            <div className={`flex items-center justify-center w-12 h-12 rounded-full ${index <= currentStepIndex ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                        <div key={step.status} className="flex items-center space-x-4 relative">
+                            <div className={`flex items-center justify-center w-12 h-12 rounded-full z-10 ${index <= currentStepIndex ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                                 <step.icon className="w-6 h-6" />
                             </div>
                             <div>

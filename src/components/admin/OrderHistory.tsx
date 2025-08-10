@@ -23,7 +23,7 @@ export function OrderHistory() {
         .map(key => JSON.parse(localStorage.getItem(key) as string))
         .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
       setOrders(allOrders);
-    } catch (error) => {
+    } catch (error) {
       console.error("Failed to parse orders from localStorage", error);
     } finally {
       setIsLoading(false);
