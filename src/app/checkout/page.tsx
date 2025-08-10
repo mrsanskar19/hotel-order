@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCart } from '@/hooks/useCart';
@@ -15,6 +16,7 @@ import BottomNav from '@/components/BottomNav';
 import type { OrderStatus, PaymentMethod } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { useEffect } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -39,6 +41,13 @@ export default function CheckoutPage() {
       note: '',
     },
   });
+
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      router.replace('/menu');
+    }
+  }, [cartItems, router]);
+
 
   const handlePlaceOrder = (values: CheckoutFormValues) => {
     const orderNumber = `GH${Math.floor(Math.random() * 9000) + 1000}`;
@@ -70,7 +79,6 @@ export default function CheckoutPage() {
   };
 
   if (cartItems.length === 0) {
-    router.replace('/menu');
     return null;
   }
 
