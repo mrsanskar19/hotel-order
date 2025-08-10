@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingCart, UserCog } from 'lucide-react';
+import { Home, ShoppingCart, UserCog, QrCode } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/hooks/useCart';
 
@@ -16,33 +16,53 @@ export default function BottomNav() {
   const pathname = usePathname();
   const { cartCount } = useCart();
 
-  // Hide nav on admin pages, except login
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     return null;
   }
 
+  const isLinkActive = (href: string) => (pathname.startsWith(href) && href !== '/') || pathname === href;
+
   return (
-    <nav className="sticky bottom-0 left-0 right-0 h-16 bg-card border-t border-border shadow-t-lg z-50">
-      <div className="flex justify-around items-center h-full max-w-md mx-auto">
-        {navItems.map((item) => {
-          const isActive = (pathname.startsWith(item.href) && item.href !== '/') || pathname === item.href;
-          return (
-            <Link href={item.href} key={item.href} className={cn(
-              "flex flex-col items-center justify-center w-full h-full text-sm font-medium transition-all duration-300 ease-in-out",
-              isActive ? 'text-primary scale-110' : 'text-muted-foreground hover:text-primary'
-            )}>
-              <div className="relative">
-                <item.icon className="w-6 h-6" />
-                {item.href === '/cart' && cartCount > 0 && (
-                  <span className="absolute -top-2 -right-3 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-primary rounded-full animate-bounce">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-              <span className="mt-1 text-xs">{item.label}</span>
+    <nav className="fixed bottom-0 left-0 right-0 h-20 bg-transparent z-50">
+      <div className="flex justify-around items-end h-full max-w-md mx-auto relative">
+        <div className="absolute bottom-0 left-0 w-full h-16 bg-card border-t border-border shadow-t-lg flex justify-around items-center">
+            {navItems.slice(0, 1).map((item) => (
+              <Link href={item.href} key={item.href} className={cn(
+                "flex flex-col items-center justify-center w-1/4 h-full text-sm font-medium transition-all duration-300 ease-in-out",
+                isLinkActive(item.href) ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+              )}>
+                <item.icon className="w-6 h-6 mb-1" />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+
+            {/* Placeholder for the central button */}
+            <div className="w-1/4"></div>
+
+            {navItems.slice(1).map((item) => (
+               <Link href={item.href} key={item.href} className={cn(
+                "flex flex-col items-center justify-center w-1/4 h-full text-sm font-medium transition-all duration-300 ease-in-out relative",
+                isLinkActive(item.href) ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+              )}>
+                 <div className="relative">
+                    <item.icon className="w-6 h-6 mb-1" />
+                    {item.href === '/cart' && cartCount > 0 && (
+                        <span className="absolute -top-1 -right-2.5 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-primary rounded-full">
+                            {cartCount}
+                        </span>
+                    )}
+                 </div>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+        </div>
+        
+        {/* Central Scan Button */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 w-20 h-20 flex items-center justify-center">
+            <Link href="/scan" className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg transform transition-transform hover:scale-105">
+                <QrCode className="w-8 h-8 text-primary-foreground" />
             </Link>
-          );
-        })}
+        </div>
       </div>
     </nav>
   );

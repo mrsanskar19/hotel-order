@@ -42,6 +42,9 @@ export default function CheckoutPage() {
       customerName: values.name,
       roomNumber: values.roomNumber,
     };
+    // Store with a unique key for history
+    localStorage.setItem(`order_${orderNumber}`, JSON.stringify(order));
+    // Also store as last order for quick access
     localStorage.setItem('lastOrder', JSON.stringify(order));
     router.push('/order-placed');
   };
