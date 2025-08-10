@@ -13,7 +13,6 @@ const statusSteps = [
     { status: 'Out for Delivery', icon: Bike, description: 'Your order is on its way to your table.', duration: 5 * 60 * 1000 },
     { status: 'Delivered', icon: PartyPopper, description: 'Enjoy your meal!', duration: 0 },
 ];
-
 export default function TrackOrderPage() {
     const [lastOrder, setLastOrder] = useState<Order | null>(null);
     const [orderStatus, setOrderStatus] = useState<OrderStatus | null>(null);
@@ -71,7 +70,6 @@ export default function TrackOrderPage() {
             }
         }
     }, [updateOrderStatus]);
-    
     useEffect(() => {
         if (!orderStatus || !orderStatus.startTime) return;
 
