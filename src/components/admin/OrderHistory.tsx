@@ -23,7 +23,7 @@ export function OrderHistory() {
         .map(key => JSON.parse(localStorage.getItem(key) as string))
         .sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
       setOrders(allOrders);
-    } catch (error) {
+    } catch (error) => {
       console.error("Failed to parse orders from localStorage", error);
     } finally {
       setIsLoading(false);
@@ -54,7 +54,7 @@ export function OrderHistory() {
                                 <p className="text-sm text-muted-foreground">{order.customerName} - Room {order.roomNumber}</p>
                             </div>
                             <div className="text-right">
-                                <p className="font-bold">${(order.total * 1.1).toFixed(2)}</p>
+                                <p className="font-bold">₹{(order.total * 1.1).toFixed(2)}</p>
                                 <p className="text-sm text-muted-foreground">{new Date(order.orderDate).toLocaleDateString()}</p>
                             </div>
                         </div>
@@ -73,16 +73,16 @@ export function OrderHistory() {
                                 <TableRow key={item.id}>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell className="text-center">{item.quantity}</TableCell>
-                                    <TableCell className="text-right">${item.price.toFixed(2)}</TableCell>
+                                    <TableCell className="text-right">₹{item.price.toFixed(2)}</TableCell>
                                 </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                          <div className="flex justify-end mt-4 text-sm">
                             <div className="text-right space-y-1">
-                                <p><span className="text-muted-foreground">Subtotal:</span> ${order.total.toFixed(2)}</p>
-                                <p><span className="text-muted-foreground">Taxes & Fees (10%):</span> ${(order.total * 0.1).toFixed(2)}</p>
-                                <p className="font-bold"><span className="text-muted-foreground">Total:</span> ${(order.total * 1.1).toFixed(2)}</p>
+                                <p><span className="text-muted-foreground">Subtotal:</span> ₹{order.total.toFixed(2)}</p>
+                                <p><span className="text-muted-foreground">Taxes & Fees (10%):</span> ₹{(order.total * 0.1).toFixed(2)}</p>
+                                <p className="font-bold"><span className="text-muted-foreground">Total:</span> ₹{(order.total * 1.1).toFixed(2)}</p>
                             </div>
                         </div>
                     </AccordionContent>

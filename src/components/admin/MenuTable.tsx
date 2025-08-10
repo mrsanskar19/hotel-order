@@ -38,7 +38,7 @@ export function MenuTable({ menuItems, onEdit }: MenuTableProps) {
                 {item.name}
                 <div className="text-xs text-muted-foreground">{item.category}</div>
               </TableCell>
-              <TableCell>${item.price.toFixed(2)}</TableCell>
+              <TableCell>₹{item.price.toFixed(2)}</TableCell>
               <TableCell>
                 <Switch
                   checked={item.isAvailable}

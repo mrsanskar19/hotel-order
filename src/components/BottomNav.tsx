@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingCart, UserCog, QrCode } from 'lucide-react';
+import { Home, ShoppingCart, UserCog, QrCode, Timer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/hooks/useCart';
 
 const navItems = [
   { href: '/menu', icon: Home, label: 'Menu' },
+  { href: '/track-order', icon: Timer, label: 'Track' },
   { href: '/cart', icon: ShoppingCart, label: 'Cart' },
   { href: '/admin/login', icon: UserCog, label: 'Admin' },
 ];
@@ -20,13 +21,19 @@ export default function BottomNav() {
     return null;
   }
 
-  const isLinkActive = (href: string) => (pathname.startsWith(href) && href !== '/') || pathname === href;
+  const isLinkActive = (href: string) => {
+    if (href === '/menu') return pathname.startsWith('/menu') || pathname.startsWith('/item');
+    return pathname.startsWith(href);
+  }
+
+  const leftItems = navItems.slice(0, 2);
+  const rightItems = navItems.slice(2);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-20 bg-transparent z-50">
       <div className="flex justify-around items-end h-full max-w-md mx-auto relative">
         <div className="absolute bottom-0 left-0 w-full h-16 bg-card border-t border-border shadow-t-lg flex justify-around items-center">
-            {navItems.slice(0, 1).map((item) => (
+            {leftItems.map((item) => (
               <Link href={item.href} key={item.href} className={cn(
                 "flex flex-col items-center justify-center w-1/4 h-full text-sm font-medium transition-all duration-300 ease-in-out",
                 isLinkActive(item.href) ? 'text-primary' : 'text-muted-foreground hover:text-primary'
@@ -39,7 +46,7 @@ export default function BottomNav() {
             {/* Placeholder for the central button */}
             <div className="w-1/4"></div>
 
-            {navItems.slice(1).map((item) => (
+            {rightItems.map((item) => (
                <Link href={item.href} key={item.href} className={cn(
                 "flex flex-col items-center justify-center w-1/4 h-full text-sm font-medium transition-all duration-300 ease-in-out relative",
                 isLinkActive(item.href) ? 'text-primary' : 'text-muted-foreground hover:text-primary'

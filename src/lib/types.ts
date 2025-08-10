@@ -7,6 +7,7 @@ export interface MenuItem {
   category: string;
   isAvailable: boolean;
   'data-ai-hint'?: string;
+  reviews?: UserReview[];
 }
 
 export interface CartItem extends MenuItem {
@@ -20,4 +21,19 @@ export interface Order {
   orderNumber: string;
   customerName: string;
   roomNumber: string;
+  status: 'Confirmed' | 'Preparing' | 'Out for Delivery' | 'Delivered';
+}
+
+export interface UserReview {
+    id: string;
+    author: string;
+    rating: number; // 1-5
+    comment: string;
+    date: string;
+}
+
+export interface OrderStatus {
+    orderNumber: string;
+    status: 'Confirmed' | 'Preparing' | 'Out for Delivery' | 'Delivered';
+    estimatedDeliveryTime: string;
 }

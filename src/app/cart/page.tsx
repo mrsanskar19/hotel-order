@@ -46,7 +46,7 @@ export default function CartPage() {
               <Separator />
               <div className="flex justify-between items-center text-lg font-bold">
                 <span>Total</span>
-                <span className="text-primary">${cartTotal.toFixed(2)}</span>
+                <span className="text-primary">₹{cartTotal.toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-2 p-4">

@@ -33,17 +33,17 @@ export default function AdminLoginPage() {
         <Card className="shadow-lg animate-fade-in">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-headline">Admin Login</CardTitle>
-            <CardDescription>Please enter your credentials to continue</CardDescription>
+            <CardDescription>Enter your credentials or use the demo account.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="admin@thegrandhotel.com" required />
+                <Input id="email" type="email" placeholder="admin@thegrandhotel.com" required defaultValue="admin@thegrandhotel.com" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="********" required />
+                <Input id="password" type="password" placeholder="********" required defaultValue="password" />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : <>

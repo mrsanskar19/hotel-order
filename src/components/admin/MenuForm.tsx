@@ -9,6 +9,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { useMenu } from '@/hooks/useMenu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -27,6 +29,9 @@ interface MenuFormProps {
 }
 
 export default function MenuForm({ onSubmit, defaultValues }: MenuFormProps) {
+  const { menuItems } = useMenu();
+  const categories = [...new Set(menuItems.map(item => item.category))];
+
   const form = useForm<MenuFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -88,9 +93,19 @@ export default function MenuForm({ onSubmit, defaultValues }: MenuFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Input placeholder="Pizzas" {...field} />
-                </FormControl>
+                 <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                    Select an existing category. To create a new one, type it in the product list view.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

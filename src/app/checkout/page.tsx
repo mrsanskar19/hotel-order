@@ -12,6 +12,7 @@ import * as z from 'zod';
 import { CreditCard, User } from 'lucide-react';
 import AppContainer from '@/components/AppContainer';
 import BottomNav from '@/components/BottomNav';
+import type { OrderStatus } from '@/lib/types';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -34,6 +35,12 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = (values: CheckoutFormValues) => {
     const orderNumber = `GH${Math.floor(Math.random() * 9000) + 1000}`;
+    const orderStatus: OrderStatus = {
+        orderNumber,
+        status: 'Confirmed',
+        estimatedDeliveryTime: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    };
+    
     const order = {
       items: cartItems,
       total: cartTotal,
@@ -41,11 +48,14 @@ export default function CheckoutPage() {
       orderNumber,
       customerName: values.name,
       roomNumber: values.roomNumber,
+      status: orderStatus.status,
     };
     // Store with a unique key for history
     localStorage.setItem(`order_${orderNumber}`, JSON.stringify(order));
     // Also store as last order for quick access
     localStorage.setItem('lastOrder', JSON.stringify(order));
+    localStorage.setItem(`orderStatus_${orderNumber}`, JSON.stringify(orderStatus));
+
     router.push('/order-placed');
   };
 
@@ -108,7 +118,7 @@ export default function CheckoutPage() {
             <CardContent>
                  <div className="flex justify-between items-center text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-primary">${cartTotal.toFixed(2)}</span>
+                    <span className="text-primary">₹{cartTotal.toFixed(2)}</span>
                 </div>
             </CardContent>
         </Card>

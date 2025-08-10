@@ -62,7 +62,7 @@ export default function BillPage() {
               <tr key={item.id} className="border-b border-dashed">
                 <td className="py-2">{item.name}</td>
                 <td className="text-center py-2">{item.quantity}</td>
-                <td className="text-right py-2">${(item.price * item.quantity).toFixed(2)}</td>
+                <td className="text-right py-2">₹{(item.price * item.quantity).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -70,9 +70,9 @@ export default function BillPage() {
 
         <div className="flex justify-end mt-6">
           <div className="text-right">
-            <p className="text-muted-foreground">Subtotal: ${order.total.toFixed(2)}</p>
-            <p className="text-muted-foreground">Taxes & Fees (10%): ${(order.total * 0.1).toFixed(2)}</p>
-            <p className="font-bold text-xl mt-1">Total: <span className="text-primary">${(order.total * 1.1).toFixed(2)}</span></p>
+            <p className="text-muted-foreground">Subtotal: ₹{order.total.toFixed(2)}</p>
+            <p className="text-muted-foreground">Taxes & Fees (10%): ₹{(order.total * 0.1).toFixed(2)}</p>
+            <p className="font-bold text-xl mt-1">Total: <span className="text-primary">₹{(order.total * 1.1).toFixed(2)}</span></p>
           </div>
         </div>
       </main>
