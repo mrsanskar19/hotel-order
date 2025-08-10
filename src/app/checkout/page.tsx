@@ -77,17 +77,17 @@ export default function CheckoutPage() {
   return (
     <AppContainer>
       <main className="flex-grow overflow-y-auto p-4 animation-fade-in">
-         <header className="p-4 border-b text-center">
-            <h1 className="font-headline text-2xl text-primary">Checkout</h1>
+        <header className="p-4 border-b text-center">
+          <h1 className="font-headline text-2xl text-primary">Checkout</h1>
         </header>
-        <Card className="my-4 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5 text-primary" /> Customer Details</CardTitle>
-            <CardDescription>Please provide your details to complete the order.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handlePlaceOrder)} id="checkout-form" className="space-y-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handlePlaceOrder)} id="checkout-form" className="space-y-4">
+            <Card className="my-4 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center"><User className="mr-2 h-5 w-5 text-primary" /> Customer Details</CardTitle>
+                <CardDescription>Please provide your details to complete the order.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -101,7 +101,7 @@ export default function CheckoutPage() {
                     </FormItem>
                   )}
                 />
-                 <FormField
+                <FormField
                   control={form.control}
                   name="mobile"
                   render={({ field }) => (
@@ -127,7 +127,7 @@ export default function CheckoutPage() {
                     </FormItem>
                   )}
                 />
-                 <FormField
+                <FormField
                   control={form.control}
                   name="note"
                   render={({ field }) => (
@@ -140,18 +140,16 @@ export default function CheckoutPage() {
                     </FormItem>
                   )}
                 />
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card className="shadow-lg">
-            <CardHeader>
+            <Card className="shadow-lg">
+              <CardHeader>
                 <CardTitle className="flex items-center"><CreditCard className="mr-2 h-5 w-5 text-primary"/> Payment</CardTitle>
                 <CardDescription>Select your preferred payment method.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <FormField
+              </CardHeader>
+              <CardContent>
+                <FormField
                   control={form.control}
                   name="paymentMethod"
                   render={({ field }) => (
@@ -161,7 +159,6 @@ export default function CheckoutPage() {
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                           className="flex flex-col space-y-1"
-                          form="checkout-form"
                         >
                           <FormItem className="flex items-center space-x-3 space-y-0">
                             <FormControl>
@@ -187,18 +184,20 @@ export default function CheckoutPage() {
                     </FormItem>
                   )}
                 />
-                 <div className="flex justify-between items-center text-lg font-bold mt-6">
-                    <span>Total</span>
-                    <span className="text-primary">₹{cartTotal.toFixed(2)}</span>
+                <div className="flex justify-between items-center text-lg font-bold mt-6">
+                  <span>Total</span>
+                  <span className="text-primary">₹{cartTotal.toFixed(2)}</span>
                 </div>
-            </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </form>
+        </Form>
       </main>
-       <div className="p-4 border-t bg-background sticky bottom-16">
-          <Button size="lg" className="w-full" type="submit" form="checkout-form">
-            Place Order
-          </Button>
-        </div>
+      <div className="p-4 border-t bg-background sticky bottom-16">
+        <Button size="lg" className="w-full" type="submit" form="checkout-form">
+          Place Order
+        </Button>
+      </div>
       <BottomNav />
     </AppContainer>
   );
