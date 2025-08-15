@@ -1,45 +1,27 @@
+
+export interface Review {
+  user: string;
+  avatar: string;
+  rating: number;
+  comment: string;
+}
+
 export interface MenuItem {
-  id: string;
+  id: number;
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
-  category: string;
-  isAvailable: boolean;
-  'data-ai-hint'?: string;
-  reviews?: UserReview[];
+  rating: number;
+  category: 'Appetizer' | 'Main Course' | 'Dessert' | 'Beverage';
+  images: string[];
+  reviewCount: number;
+  reviews: Review[];
 }
-
-export interface CartItem extends MenuItem {
-  quantity: number;
-}
-
-export type PaymentMethod = 'UPI' | 'Card' | 'Cash';
 
 export interface Order {
-  items: CartItem[];
-  total: number;
-  orderDate: string;
-  orderNumber: string;
-  customerName: string;
-  tableNumber: string;
-  mobile: string;
-  note?: string;
-  paymentMethod: PaymentMethod;
-  status: 'Confirmed' | 'Preparing' | 'Out for Delivery' | 'Delivered';
-}
-
-export interface UserReview {
     id: string;
-    author: string;
-    rating: number; // 1-5
-    comment: string;
+    items: any[]; // You might want to type this more strictly, e.g., CartItem[]
+    total: number;
     date: string;
-}
-
-export interface OrderStatus {
-    orderNumber: string;
-    status: 'Confirmed' | 'Preparing' | 'Out for Delivery' | 'Delivered';
-    estimatedDeliveryTime: string;
-    startTime?: string;
+    status: 'Active' | 'Closed';
 }
