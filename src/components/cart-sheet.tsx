@@ -10,6 +10,7 @@ import { useCart, type CartItem } from '@/hooks/use-cart';
 import { useOrders } from '@/hooks/use-orders';
 import { SlideToConfirm } from '@/components/slide-to-confirm';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface CartSheetProps {
   isOpen: boolean;
@@ -44,8 +45,14 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProp
   
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl flex flex-col md:max-w-md md:right-0 md:h-full md:rounded-none">
-        <SheetHeader className='text-center'>
+      <SheetContent
+        side="right"
+        className={cn(
+          "h-screen w-full flex flex-col", // Default: full screen for mobile
+          "md:w-[500px] md:h-screen md:border-l" // Desktop: side sheet
+        )}
+      >
+        <SheetHeader className='text-center md:text-left'>
           <SheetTitle className="font-headline text-3xl">Your Cart</SheetTitle>
         </SheetHeader>
         {cartItems.length > 0 ? (

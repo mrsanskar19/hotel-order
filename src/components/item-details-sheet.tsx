@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Star, X, Plus, Minus } from 'lucide-react';
+import { Star, X, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import type { MenuItem } from '@/lib/types';
@@ -35,14 +35,24 @@ export function ItemDetailsSheet({ item, isOpen, onOpenChange, onAddToCart }: It
         setTimeout(() => setQuantity(1), 300); // Reset quantity after animation
       }
     }}>
-      <DialogContent className="max-w-4xl w-full h-full md:h-[90vh] p-0 flex flex-col gap-0">
+      <DialogContent className="max-w-full w-full h-full p-0 flex flex-col gap-0 md:max-w-4xl md:h-[90vh] md:rounded-lg">
+        <div className="p-4 flex items-center justify-between md:hidden sticky top-0 bg-background/80 backdrop-blur-sm z-10 border-b">
+            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => onOpenChange(false)}>
+              <ArrowLeft className="w-5 h-5"/>
+            </Button>
+            <h2 className="font-headline text-lg truncate flex-1 text-center">{item.name}</h2>
+             <Button variant="ghost" size="icon" className="rounded-full invisible">
+              <ArrowLeft className="w-5 h-5"/>
+            </Button>
+        </div>
+
         <DialogTitle className="sr-only">{item.name}</DialogTitle>
-        <Button variant="ghost" size="icon" className="absolute top-3 right-3 z-20 rounded-full bg-background/70 hover:bg-background" onClick={() => onOpenChange(false)}>
+        <Button variant="ghost" size="icon" className="absolute top-3 right-3 z-20 rounded-full bg-background/70 hover:bg-background hidden md:flex" onClick={() => onOpenChange(false)}>
           <X className="w-5 h-5"/>
         </Button>
 
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0">
-          <div className="relative h-full w-full min-h-64">
+          <div className="relative h-full w-full min-h-64 md:min-h-0">
             <Carousel className="w-full h-full">
               <CarouselContent className="h-full">
                 {item.images.map((img, index) => (
@@ -106,7 +116,6 @@ export function ItemDetailsSheet({ item, isOpen, onOpenChange, onAddToCart }: It
             </ScrollArea>
             <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm border-t mt-auto">
               <div className="flex items-center justify-between gap-4">
-                <p className="text-2xl font-bold font-headline">₹{item.price.toFixed(2)}</p>
                 <div className="flex items-center gap-2">
                   <Button size="icon" variant="outline" className="h-12 w-12 rounded-full" onClick={() => setQuantity(q => Math.max(1, q - 1))}>
                     <Minus className="h-6 w-6" />
@@ -116,10 +125,10 @@ export function ItemDetailsSheet({ item, isOpen, onOpenChange, onAddToCart }: It
                     <Plus className="h-6 w-6" />
                   </Button>
                 </div>
+                 <Button className="flex-1 h-12 text-base" onClick={handleConfirmAddToCart}>
+                    Add to Cart - ₹{(item.price * quantity).toFixed(2)}
+                 </Button>
               </div>
-              <Button className="w-full mt-4 h-12 text-base" onClick={handleConfirmAddToCart}>
-                Add to Cart
-              </Button>
             </div>
           </div>
         </div>

@@ -157,7 +157,7 @@ export default function OrdersPage() {
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
         />
-        <div className="flex-1 flex flex-col w-full">
+        <div className="flex-1 flex flex-col w-full md:ml-[250px]">
             <AppHeader 
                 onOpenCart={() => {}} 
                 searchTerm={searchTerm} 

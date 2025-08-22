@@ -75,6 +75,7 @@ export function SlideToConfirm({
   let textToShow = text;
   if(isLoading) textToShow = loadingText;
   if(isSuccess) textToShow = successText;
+  const sliderBgColor = isSuccess ? 'hsl(var(--success))' : isLoading ? 'hsl(var(--accent))' : `hsl(var(--primary) / ${Math.max(0.8, slideProgress * 1.5)})`;
 
   return (
     <div
@@ -95,15 +96,15 @@ export function SlideToConfirm({
     >
       <div 
         className="absolute left-0 top-0 h-full bg-primary/80 rounded-full"
-        style={{ width: trackWidth, transition: isSliding ? 'none' : 'width 0.3s ease' }}
+        style={{ width: trackWidth, transition: isSliding ? 'none' : 'width 0.3s ease', backgroundColor: sliderBgColor }}
       />
       <div
         ref={sliderRef}
         className="absolute left-0 top-0 h-14 w-14 rounded-full flex items-center justify-center bg-primary text-primary-foreground shadow-lg"
         style={{ 
           transform: `translateX(${sliderPosition})`, 
-          transition: isSliding ? 'none' : 'transform 0.3s ease',
-          backgroundColor: `hsl(var(--primary) / ${Math.max(0.8, slideProgress * 1.5)})`
+          backgroundColor: sliderBgColor,
+          transition: isSliding ? 'none' : 'transform 0.3s ease, background-color 0.3s ease'
         }}
       >
         <div 
@@ -126,7 +127,7 @@ export function SlideToConfirm({
 
       <span className={cn(
           "z-10 transition-opacity duration-300 text-primary-foreground mix-blend-overlay",
-          isLoading || isSuccess ? 'opacity-100' : 'opacity-80'
+          (isLoading || isSuccess) ? 'opacity-100' : 'opacity-80'
       )}>
         {textToShow}
       </span>

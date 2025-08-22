@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState } from 'react';
@@ -93,7 +94,7 @@ export default function Home() {
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
       />
-      <div className="flex flex-col flex-1 w-full">
+      <div className="flex flex-col flex-1 w-full md:ml-[250px]">
         <AppHeader onOpenCart={() => setIsCartSheetOpen(true)} searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
         <main className="flex-1 pb-24 md:pb-0">
           <div className="container py-8">
