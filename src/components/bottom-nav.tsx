@@ -24,7 +24,7 @@ export function BottomNav({ onOpenCart }: BottomNavProps) {
     setIsClient(true);
   }, []);
 
-  const activeOrdersCount = orders.filter(o => o.status === 'Active').length;
+  const activeOrdersCount = isClient ? orders.filter(o => o.status === 'Active').length : 0;
 
   const navItems = [
     { href: '/', label: 'Menu', icon: Home },

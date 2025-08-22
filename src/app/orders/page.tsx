@@ -1,10 +1,10 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useOrders } from '@/hooks/use-orders';
-import { AppHeader } from '@/components/app-header';
 import { BottomNav } from '@/components/bottom-nav';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { AppSidebar } from '@/components/app-sidebar';
+import { AppHeader } from '@/components/app-header';
 
 export default function OrdersPage() {
   const { orders, closeOrder } = useOrders();
@@ -36,7 +38,6 @@ export default function OrdersPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
 
   const handleSlideConfirm = (orderId: string) => {
     setOrderToClose(orderId);
@@ -52,7 +53,7 @@ export default function OrdersPage() {
     // Simulate API call for closing order
     setTimeout(() => {
       setSliderStates(prev => ({ ...prev, [orderToClose]: { isLoading: false, isSuccess: true } }));
-      toast({ title: 'Payment Successful!', description: 'Your order has been closed.' });
+      toast({ title: 'Payment Successful!', description: 'Your order has been closed.', duration: 5000 });
       
       setTimeout(() => {
         closeOrder(orderToClose);
@@ -66,7 +67,8 @@ export default function OrdersPage() {
     }, 1000);
   };
 
-  const activeOrder = orders.find(o => o.status === 'Active');
+  const activeOrder = isClient ? orders.find(o => o.status === 'Active') : undefined;
+  const imageUrl = (item: any) => (item.images && item.images.length > 0) ? item.images[0] : 'https://placehold.co/48x48.png';
 
   const renderContent = () => {
     if (!isClient) {
@@ -79,6 +81,7 @@ export default function OrdersPage() {
     }
     
     if (activeOrder) {
+      
       return (
         <Card key={activeOrder.id} className="overflow-hidden">
           <CardHeader className="flex-row justify-between items-center bg-muted/50 p-4">
@@ -90,19 +93,17 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent className="p-4">
             <div className="space-y-3">
-              {activeOrder.items.map(item => {
-                const imageUrl = (item.images && item.images.length > 0) ? item.images[0] : 'https://placehold.co/48x48.png';
-                return (
+              {activeOrder.items.map(item => (
                   <div key={item.id} className="flex items-center gap-4">
-                    <Image src={imageUrl} alt={item.name} width={48} height={48} className="rounded-full object-cover" data-ai-hint="food meal"/>
+                    <Image src={imageUrl(item)} alt={item.name} width={48} height={48} className="rounded-full object-cover" data-ai-hint="food meal"/>
                     <div className="flex-1">
                       <p className="font-semibold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
                     <p className="font-semibold">₹{(item.price * item.quantity).toFixed(2)}</p>
                   </div>
-                );
-              })}
+                )
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex-col items-stretch gap-4 bg-muted/50 p-4">
@@ -110,13 +111,30 @@ export default function OrdersPage() {
                 <span>Total</span>
                 <span>₹{activeOrder.total.toFixed(2)}</span>
               </div>
-            <SlideToConfirm 
-              onConfirm={() => handleSlideConfirm(activeOrder.id)}
-              isLoading={sliderStates[activeOrder.id]?.isLoading || false}
-              isSuccess={sliderStates[activeOrder.id]?.isSuccess || false}
-              text="Slide to Close Order & Pay"
-              successText="Order Closed!"
-            />
+              <div className="md:hidden">
+                <SlideToConfirm 
+                  onConfirm={() => handleSlideConfirm(activeOrder.id)}
+                  isLoading={sliderStates[activeOrder.id]?.isLoading || false}
+                  isSuccess={sliderStates[activeOrder.id]?.isSuccess || false}
+                  text="Slide to Close Order & Pay"
+                  successText="Order Closed!"
+                />
+              </div>
+              <div className="hidden md:block">
+                  <Button 
+                    onClick={() => handleSlideConfirm(activeOrder.id)} 
+                    className="w-full h-12 text-base"
+                    disabled={sliderStates[activeOrder.id]?.isLoading || sliderStates[activeOrder.id]?.isSuccess}
+                  >
+                    {sliderStates[activeOrder.id]?.isLoading ? (
+                      <Loader2 className="animate-spin" />
+                    ) : sliderStates[activeOrder.id]?.isSuccess ? (
+                      'Order Closed!'
+                    ) : (
+                      'Close Order & Pay'
+                    )}
+                  </Button>
+              </div>
           </CardFooter>
         </Card>
       );
@@ -133,18 +151,25 @@ export default function OrdersPage() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-secondary/20">
-        <AppHeader
+      <div className="flex min-h-screen bg-secondary/20">
+        <AppSidebar
           onOpenCart={() => {}}
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
         />
-        <main className="flex-1 pb-24">
-          <div className="container py-8">
-            <h1 className="text-3xl font-bold font-headline mb-6">Your Order</h1>
-            {renderContent()}
-          </div>
-        </main>
+        <div className="flex-1 flex flex-col w-full">
+            <AppHeader 
+                onOpenCart={() => {}} 
+                searchTerm={searchTerm} 
+                onSearchTermChange={setSearchTerm} 
+            />
+            <main className="flex-1 pb-24 md:pb-0">
+              <div className="container py-8">
+                <h1 className="text-3xl font-bold font-headline mb-6">Your Order</h1>
+                {renderContent()}
+              </div>
+            </main>
+        </div>
         <BottomNav onOpenCart={() => {}} />
       </div>
 

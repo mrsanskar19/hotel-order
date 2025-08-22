@@ -2,8 +2,8 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
-import { Star, ChevronLeft, Plus, Minus } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Star, X, Plus, Minus } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import type { MenuItem } from '@/lib/types';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -29,29 +29,26 @@ export function ItemDetailsSheet({ item, isOpen, onOpenChange, onAddToCart }: It
   if (!item) return null;
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => {
+    <Dialog open={isOpen} onOpenChange={(open) => {
       onOpenChange(open);
       if (!open) {
-        setQuantity(1); // Reset quantity on close
+        setTimeout(() => setQuantity(1), 300); // Reset quantity after animation
       }
     }}>
-      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col h-full data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom">
-         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-2 bg-gradient-to-b from-black/50 to-transparent">
-            <Button variant="ghost" size="icon" className="rounded-full bg-background/70 hover:bg-background" onClick={() => onOpenChange(false)}>
-                <ChevronLeft />
-            </Button>
-            <h2 className="text-lg font-headline text-white text-shadow-lg truncate max-w-[calc(100%-100px)]">{item.name}</h2>
-            <div className="w-10"></div>
-        </div>
+      <DialogContent className="max-w-4xl w-full h-full md:h-[90vh] p-0 flex flex-col gap-0">
+        <DialogTitle className="sr-only">{item.name}</DialogTitle>
+        <Button variant="ghost" size="icon" className="absolute top-3 right-3 z-20 rounded-full bg-background/70 hover:bg-background" onClick={() => onOpenChange(false)}>
+          <X className="w-5 h-5"/>
+        </Button>
 
-        <ScrollArea className="flex-1">
-          <div className="relative">
-            <Carousel className="w-full">
-              <CarouselContent>
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0">
+          <div className="relative h-full w-full min-h-64">
+            <Carousel className="w-full h-full">
+              <CarouselContent className="h-full">
                 {item.images.map((img, index) => (
-                  <CarouselItem key={index}>
-                    <div className="relative h-96 w-full">
-                      <Image src={img} alt={`${item.name} image ${index + 1}`} layout="fill" objectFit="cover" data-ai-hint="food meal" />
+                  <CarouselItem key={index} className="h-full">
+                    <div className="relative h-full w-full">
+                      <Image src={img} alt={`${item.name} image ${index + 1}`} layout="fill" objectFit="cover" data-ai-hint="food meal" className="md:rounded-l-lg"/>
                     </div>
                   </CarouselItem>
                 ))}
@@ -63,72 +60,70 @@ export function ItemDetailsSheet({ item, isOpen, onOpenChange, onAddToCart }: It
                 </>
               )}
             </Carousel>
-             <div className="absolute bottom-4 right-4 bg-background/80 rounded-full p-1 shadow-lg">
-              <Badge variant="secondary" className="text-lg font-bold">
-                ₹{item.price.toFixed(2)}
-              </Badge>
-            </div>
           </div>
           
-          <div className="p-6 pb-32">
-            <SheetHeader className="text-left">
-              <SheetTitle className="font-headline text-3xl">{item.name}</SheetTitle>
-              <div className="flex items-center gap-4 text-muted-foreground pt-2">
-                <Badge>{item.category}</Badge>
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="font-semibold">{item.rating}</span>
-                  <span>({item.reviewCount} reviews)</span>
+          <div className="flex flex-col relative">
+            <ScrollArea className="flex-1">
+              <div className="p-6 md:p-8">
+                <div className="flex items-center gap-4 text-muted-foreground pt-2">
+                  <Badge>{item.category}</Badge>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <span className="font-semibold">{item.rating}</span>
+                    <span>({item.reviewCount} reviews)</span>
+                  </div>
                 </div>
-              </div>
-              <SheetDescription className="pt-4 text-base font-body">{item.description}</SheetDescription>
-            </SheetHeader>
-
-            {item.reviews.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-headline text-xl mb-4">Reviews</h3>
-                <div className="space-y-4">
-                  {item.reviews.map((review, index) =>( 
-                    <div key={index} className="flex gap-3 bg-secondary/30 p-4 rounded-lg">
-                      <Avatar>
-                        <AvatarImage src={review.avatar} alt={review.user} data-ai-hint="person face" />
-                        <AvatarFallback>{review.user.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                           <p className="font-semibold">{review.user}</p>
-                           <div className="flex items-center">
-                              {[...Array(5)].map((_, i) => (
-                                <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground/30'}`} />
-                              ))}
-                           </div>
+                <h1 className="font-headline text-3xl md:text-4xl mt-4">{item.name}</h1>
+                <p className="mt-4 text-lg font-body">{item.description}</p>
+              
+                {item.reviews.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="font-headline text-xl mb-4">Reviews</h3>
+                    <div className="space-y-4">
+                      {item.reviews.map((review, index) =>( 
+                        <div key={index} className="flex gap-3 bg-secondary/30 p-4 rounded-lg">
+                          <Avatar>
+                            <AvatarImage src={review.avatar} alt={review.user} data-ai-hint="person face" />
+                            <AvatarFallback>{review.user.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                               <p className="font-semibold">{review.user}</p>
+                               <div className="flex items-center">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground/30'}`} />
+                                  ))}
+                               </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">{review.comment}</p>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">{review.comment}</p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+            <div className="p-4 md:p-6 bg-background/80 backdrop-blur-sm border-t mt-auto">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-2xl font-bold font-headline">₹{item.price.toFixed(2)}</p>
+                <div className="flex items-center gap-2">
+                  <Button size="icon" variant="outline" className="h-12 w-12 rounded-full" onClick={() => setQuantity(q => Math.max(1, q - 1))}>
+                    <Minus className="h-6 w-6" />
+                  </Button>
+                  <span className="w-10 text-center font-bold text-xl">{quantity}</span>
+                  <Button size="icon" variant="outline" className="h-12 w-12 rounded-full" onClick={() => setQuantity(q => q + 1)}>
+                    <Plus className="h-6 w-6" />
+                  </Button>
                 </div>
               </div>
-            )}
-          </div>
-        </ScrollArea>
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-sm border-t">
-          <div className="flex items-center justify-between gap-4">
-             <div className="flex items-center gap-2">
-                <Button size="icon" variant="outline" className="h-12 w-12 rounded-full" onClick={() => setQuantity(q => Math.max(1, q - 1))}>
-                  <Minus className="h-6 w-6" />
-                </Button>
-                <span className="w-10 text-center font-bold text-xl">{quantity}</span>
-                <Button size="icon" variant="outline" className="h-12 w-12 rounded-full" onClick={() => setQuantity(q => q + 1)}>
-                  <Plus className="h-6 w-6" />
-                </Button>
-              </div>
-              <Button className="flex-1 h-12 text-base" onClick={handleConfirmAddToCart}>
+              <Button className="w-full mt-4 h-12 text-base" onClick={handleConfirmAddToCart}>
                 Add to Cart
               </Button>
+            </div>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

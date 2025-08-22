@@ -1,6 +1,7 @@
+
 'use client';
 import Image from 'next/image';
-import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { X, Plus, Minus, ShoppingCart, Loader2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -43,7 +44,7 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProp
   
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl flex flex-col">
+      <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl flex flex-col md:max-w-md md:right-0 md:h-full md:rounded-none">
         <SheetHeader className='text-center'>
           <SheetTitle className="font-headline text-3xl">Your Cart</SheetTitle>
         </SheetHeader>
@@ -62,13 +63,30 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProp
                 <span>Total</span>
                 <span>₹{totalPrice.toFixed(2)}</span>
               </div>
-              <SlideToConfirm 
-                onConfirm={handlePlaceOrder}
-                isLoading={isLoading}
-                isSuccess={isSuccess}
-                text="Slide to place order"
-                successText="Order Updated!"
-              />
+              <div className="md:hidden">
+                <SlideToConfirm 
+                  onConfirm={handlePlaceOrder}
+                  isLoading={isLoading}
+                  isSuccess={isSuccess}
+                  text="Slide to place order"
+                  successText="Order Updated!"
+                />
+              </div>
+              <div className="hidden md:block">
+                  <Button 
+                    onClick={handlePlaceOrder} 
+                    className="w-full h-12 text-base"
+                    disabled={isLoading || isSuccess}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="animate-spin" />
+                    ) : isSuccess ? (
+                      'Order Placed!'
+                    ) : (
+                      'Place Order'
+                    )}
+                  </Button>
+              </div>
             </SheetFooter>
           </>
         ) : (
