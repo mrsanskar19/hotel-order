@@ -2,7 +2,7 @@
 'use client';
 import Image from 'next/image';
 import { X, Plus, Minus, ShoppingCart, Loader2 } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -11,6 +11,7 @@ import { useOrders } from '@/hooks/use-orders';
 import { SlideToConfirm } from '@/components/slide-to-confirm';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CartSheetProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProp
   const { addOrder } = useOrders();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const isMobile = useIsMobile();
 
   const handlePlaceOrder = () => {
     setIsLoading(true);
@@ -43,21 +45,28 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProp
     }, 2000);
   };
   
+  const side = isMobile ? 'bottom' : 'right';
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent
-        side="right"
+        side={side}
         className={cn(
-          "h-screen w-full flex flex-col", // Default: full screen for mobile
-          "md:w-[500px] md:h-screen md:border-l" // Desktop: side sheet
+          "w-full flex flex-col p-0",
+          isMobile ? "h-[75vh] rounded-t-2xl" : "md:w-[500px] h-screen" 
         )}
       >
-        <SheetHeader className='text-center md:text-left'>
+        {isMobile && (
+           <div className="absolute top-0 left-0 right-0 p-4 flex justify-center bg-background rounded-t-2xl">
+              <div className="w-20 h-1.5 bg-muted rounded-full" />
+           </div>
+        )}
+        <SheetHeader className='text-center md:text-left pt-8 px-6'>
           <SheetTitle className="font-headline text-3xl">Your Cart</SheetTitle>
         </SheetHeader>
         {cartItems.length > 0 ? (
           <>
-            <ScrollArea className="flex-1 -mx-6">
+            <ScrollArea className="flex-1 -mx-0">
               <div className="px-6 divide-y">
                 {cartItems.map(item => (
                   <CartItemRow key={item.id} item={item} updateQuantity={updateQuantity} removeFromCart={removeFromCart} />
@@ -65,7 +74,7 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProp
               </div>
             </ScrollArea>
             <Separator className="my-4" />
-            <SheetFooter className="flex flex-col gap-4">
+            <SheetFooter className="flex flex-col gap-4 px-6 pb-6">
               <div className="flex justify-between items-center font-bold text-lg">
                 <span>Total</span>
                 <span>₹{totalPrice.toFixed(2)}</span>

@@ -31,7 +31,7 @@ export function AppSidebar({ onOpenCart, searchTerm, onSearchTermChange }: AppSi
 
   const navItems = [
     { href: '/', label: 'Menu', icon: Home },
-    { href: '/orders', label: 'Orders', icon: ListOrdered, badge: activeOrdersCount },
+    { href: './orders', label: 'Orders', icon: ListOrdered, badge: activeOrdersCount },
   ];
 
   return (
