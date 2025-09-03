@@ -17,11 +17,11 @@ import { cn } from '@/lib/utils';
 import Logo from './logo';
 
 const navLinks = [
-  { href: '/pricing', label: 'Pricing' },
+  // { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
   { href: '/team', label: 'Team' },
-  { href: '/careers', label: 'Careers' },
-  { href: 'https://firebase.google.com/docs', label: 'Docs', external: true },
+  // { href: '/careers', label: 'Careers' },
+  // { href: 'https://firebase.google.com/docs', label: 'Docs', external: true },
   { href: '/contact', label: 'Contact' },
   { href: '/faq', label: 'FAQ' },
 ];

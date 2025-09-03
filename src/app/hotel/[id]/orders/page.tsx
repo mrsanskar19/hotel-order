@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -10,7 +9,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SlideToConfirm } from '@/components/slide-to-confirm';
-import { Receipt, CreditCard, Landmark, CircleDot, Loader2, QrCode, Download, CheckCircle } from 'lucide-react';
+import { Receipt, CreditCard, Landmark, CircleDot, Loader2, QrCode, Download, CheckCircle, User, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -21,6 +20,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -31,10 +31,16 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import type { Order } from '@/lib/types';
 
+import { getData } from "@/lib/api";
+
 
 const UPI_ID = '8767595276@fam';
 const PAYEE_NAME = 'Foodie Go';
 
+type UserInfo = {
+  name: string;
+  phone: string;
+}
 
 export default function OrdersPage() {
   const { orders, closeOrder } = useOrders();
@@ -48,9 +54,14 @@ export default function OrdersPage() {
   const [isClient, setIsClient] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isPaymentSuccess, setIsPaymentSuccess] = useState(false);
+  const [isUserInfoNext, setIsUserInfoNext] = useState(false);
+  const [userInfo, setUserInfo] = useState<UserInfo>({ name: '', phone: '' });
+
+  const [hotel,setHotel] = useState(null);
 
   useEffect(() => {
-    setIsClient(true);
+    // This trick prevents hydration errors by ensuring this component only renders on the client.
+    setIsClient(true); 
   }, []);
 
   const handleSlideConfirm = (order: Order) => {
@@ -59,6 +70,8 @@ export default function OrdersPage() {
     setIsPaymentSuccess(false);
     setIsVerifying(false);
     setCustomUpiId('');
+    setIsUserInfoNext(false);
+    setUserInfo({ name: '', phone: '' });
   };
 
   const handlePayment = () => {
@@ -80,7 +93,7 @@ export default function OrdersPage() {
     
     setTimeout(() => {
       setSliderStates(prev => ({ ...prev, [orderToClose.id]: { isLoading: false, isSuccess: true } }));
-      toast({ title: 'Payment Successful!', description: 'Your order has been closed.', duration: 5000 });
+      toast({ title: 'Payment Successful!', description: 'Your order has been closed.', duration: 5000, variant: 'success' });
       
       setTimeout(() => {
         closeOrder(orderToClose.id);
@@ -109,34 +122,61 @@ export default function OrdersPage() {
     return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
   }, [upiUrl]);
 
-  const generatePdfReceipt = (order: Order) => {
+  const generatePdfReceipt = (order: Order, userInfo: UserInfo) => {
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
     
+    // Header
     doc.setFont('helvetica', 'bold');
-    doc.text('Foodie Go Receipt', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
+    doc.setFontSize(24);
+    doc.text('Foodie Go', pageWidth / 2, 20, { align: 'center' });
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Order ID: ${order.id.substring(0, 8)}`, 20, 40);
-    doc.text(`Date: ${format(new Date(order.date), "PPP p")}`, 20, 45);
+    doc.text('Your delicious meal, delivered.', pageWidth / 2, 28, { align: 'center' });
     
+    doc.setDrawColor(200);
+    doc.line(15, 35, pageWidth - 15, 35);
+    
+    // Order Details
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Order Receipt', 15, 45);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Order ID: ${order.id.substring(0, 8)}`, 15, 52);
+    doc.text(`Date: ${format(new Date(order.date), "PPP p")}`, 15, 57);
+    if(userInfo.name) doc.text(`Customer Name: ${userInfo.name}`, 15, 62);
+    if(userInfo.phone) doc.text(`Customer Phone: ${userInfo.phone}`, 15, 67);
+
+
+    // Items Table
     (doc as any).autoTable({
-        startY: 60,
-        head: [['Item', 'Quantity', 'Price', 'Total']],
+        startY: 75,
+        head: [['Item', 'Notes', 'Quantity', 'Price', 'Total']],
         body: order.items.map(item => [
             item.name,
+            item.notes || '-',
             item.quantity,
             `₹${item.price.toFixed(2)}`,
             `₹${(item.price * item.quantity).toFixed(2)}`
         ]),
         theme: 'striped',
-        headStyles: { fillColor: [255, 165, 0] }
+        headStyles: { fillColor: [34, 34, 34] }, // Dark grey for header
+        styles: { font: 'helvetica', fontSize: 10 },
+        margin: { left: 15, right: 15 }
     });
     
+    // Total
     const finalY = (doc as any).lastAutoTable.finalY;
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Total: ₹${order.total.toFixed(2)}`, 185, finalY + 15, { align: 'right' });
+    doc.text(`Total: ₹${order.total.toFixed(2)}`, pageWidth - 15, finalY + 15, { align: 'right' });
+    
+    // Footer
+    doc.line(15, finalY + 25, pageWidth - 15, finalY + 25);
+    doc.setFontSize(10);
+    doc.text('Thank you for your order!', pageWidth / 2, finalY + 32, { align: 'center' });
     
     doc.save(`Foodie-Go-Receipt-${order.id.substring(0,6)}.pdf`);
   }
@@ -220,6 +260,30 @@ export default function OrdersPage() {
     );
   }
 
+  const renderUserInfoContent = () => (
+    <div className='space-y-4 py-4'>
+        <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+                placeholder="Name (Optional)" 
+                className="pl-10"
+                value={userInfo.name}
+                onChange={(e) => setUserInfo(prev => ({...prev, name: e.target.value}))}
+            />
+        </div>
+        <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+                placeholder="Phone Number (Optional)" 
+                type="tel"
+                className="pl-10"
+                value={userInfo.phone}
+                onChange={(e) => setUserInfo(prev => ({...prev, phone: e.target.value}))}
+            />
+        </div>
+    </div>
+  );
+
   const renderPaymentContent = () => {
     if (isVerifying) {
         return (
@@ -235,7 +299,7 @@ export default function OrdersPage() {
             <div className="flex flex-col items-center justify-center text-center gap-4 min-h-[200px]">
                 <CheckCircle className="w-16 h-16 text-green-500"/>
                 <p className="font-semibold text-xl">Payment Successful!</p>
-                <Button onClick={() => orderToClose && generatePdfReceipt(orderToClose)}>
+                <Button onClick={() => orderToClose && generatePdfReceipt(orderToClose, userInfo)}>
                     <Download className="mr-2 h-4 w-4"/>
                     Download Receipt
                 </Button>
@@ -265,7 +329,7 @@ export default function OrdersPage() {
             <div className='text-center text-muted-foreground text-sm'>OR PAY TO UPI ID</div>
 
             <Input 
-              placeholder="Enter your UPI ID" 
+              placeholder="Enter your UPI ID to pay" 
               value={customUpiId}
               onChange={(e) => setCustomUpiId(e.target.value)}
               className="text-center"
@@ -281,6 +345,21 @@ export default function OrdersPage() {
     }
   }
 
+     useEffect(()=>{
+  asyncFuncation();
+  },[])
+
+  async function asyncFuncation(){
+    const hotel = await getData(`hotel/${id}`);
+    setHotel(hotel)
+    console.log(hotel)
+  }
+
+  if (!hotel) {
+    return <div className="p-6 text-red-500">Hotel not found</div>;
+  }
+
+
 
   return (
     <>
@@ -289,14 +368,16 @@ export default function OrdersPage() {
           onOpenCart={() => {}}
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
+          name={hotel.name}
         />
         <div className="flex-1 flex flex-col w-full md:ml-[250px]">
             <AppHeader 
                 onOpenCart={() => {}} 
                 searchTerm={searchTerm} 
                 onSearchTermChange={setSearchTerm} 
+                name={hotel.name}
             />
-            <main className="flex-1 pb-24 md:pb-0 md:pl-[250px]">
+            <main className="flex-1 pb-24 md:pb-0 md:pl-0">
               <div className="container py-8">
                 <h1 className="text-3xl font-bold font-headline mb-6">Your Order</h1>
                 {renderContent()}
@@ -309,40 +390,52 @@ export default function OrdersPage() {
       <AlertDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Complete Your Payment</AlertDialogTitle>
+            <AlertDialogTitle>{isUserInfoNext ? 'Complete Your Payment' : 'Your Information'}</AlertDialogTitle>
              {!isPaymentSuccess && (
               <AlertDialogDescription>
-                Choose your preferred payment method to close the order.
+                {isUserInfoNext 
+                    ? 'Choose your preferred payment method to close the order.'
+                    : 'Please provide your details for the receipt (optional).'
+                }
               </AlertDialogDescription>
             )}
           </AlertDialogHeader>
-          <div className="space-y-4 py-4">
-              {!isVerifying && !isPaymentSuccess && (
-                <div className="flex gap-2">
-                  <Button variant={selectedPaymentMethod === 'upi' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('upi')}>
-                    <CircleDot className="w-5 h-5 mr-2"/>
-                    <span className="font-semibold">UPI</span>
-                  </Button>
-                  <Button variant={selectedPaymentMethod === 'card' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('card')}>
-                    <CreditCard className="w-5 h-5 mr-2"/>
-                    <span className="font-semibold">Card</span>
-                  </Button>
-                  <Button variant={selectedPaymentMethod === 'netbanking' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('netbanking')}>
-                    <Landmark className="w-5 h-5 mr-2"/>
-                    <span className="font-semibold">Banking</span>
-                  </Button>
-                </div>
-              )}
-              <div className="pt-4 min-h-[200px] flex items-center justify-center">
-                {renderPaymentContent()}
+
+          {!isUserInfoNext ? renderUserInfoContent() : (
+              <div className="space-y-4 py-4">
+                  {!isVerifying && !isPaymentSuccess && (
+                    <div className="flex gap-2">
+                      <Button variant={selectedPaymentMethod === 'upi' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('upi')}>
+                        <CircleDot className="w-5 h-5 mr-2"/>
+                        <span className="font-semibold">UPI</span>
+                      </Button>
+                      <Button variant={selectedPaymentMethod === 'card' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('card')}>
+                        <CreditCard className="w-5 h-5 mr-2"/>
+                        <span className="font-semibold">Card</span>
+                      </Button>
+                      <Button variant={selectedPaymentMethod === 'netbanking' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('netbanking')}>
+                        <Landmark className="w-5 h-5 mr-2"/>
+                        <span className="font-semibold">Banking</span>
+                      </Button>
+                    </div>
+                  )}
+                  <div className="pt-4 min-h-[200px] flex items-center justify-center">
+                    {renderPaymentContent()}
+                  </div>
               </div>
-          </div>
+          )}
+
           <AlertDialogFooter>
             {isPaymentSuccess ? (
                 <Button onClick={handleCloseOrder} className="w-full">Done</Button>
-            ) : (
+            ) : !isUserInfoNext ? (
                 <>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => setIsUserInfoNext(true)}>Next</AlertDialogAction>
+                </>
+            ) : (
+                <>
+                    <Button variant="outline" onClick={() => setIsUserInfoNext(false)}>Back</Button>
                     <AlertDialogAction onClick={handlePayment} disabled={selectedPaymentMethod === 'upi' && !customUpiId || isVerifying}>
                         {isVerifying ? <Loader2 className="animate-spin" /> : `Pay ₹${activeOrder?.total.toFixed(2)}`}
                     </AlertDialogAction>

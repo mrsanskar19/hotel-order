@@ -53,6 +53,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { menuItems } from '@/lib/data';
 import type { MenuItem } from '@/types';
 
+import { AddMenuItemDialog } from '@/components/AddMenuItemDialog';
+
 export default function MenuPage() {
   const [items, setItems] = React.useState<MenuItem[]>(menuItems);
   const [filter, setFilter] = React.useState('all');
@@ -77,42 +79,7 @@ export default function MenuPage() {
           <TabsTrigger value="out-of-stock">Out of Stock</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-           <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" className="h-8 gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Item
-                  </span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="font-headline">Add New Menu Item</DialogTitle>
-                  <DialogDescription>
-                    Fill in the details to add a new item to your menu.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  {/* Form fields here */}
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">Name</Label>
-                    <Input id="name" defaultValue="New Item" className="col-span-3" />
-                  </div>
-                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="price" className="text-right">Price</Label>
-                    <Input id="price" type="number" defaultValue="10.00" className="col-span-3" />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right">Description</Label>
-                    <Textarea id="description" placeholder="Item description" className="col-span-3" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Save changes</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+           <AddMenuItemDialog onAdd={()=>alert("test")}/>
         </div>
       </div>
       <TabsContent value={filter}>

@@ -1,8 +1,8 @@
-
 'use client';
 
 import type { CartItem } from '@/hooks/use-cart';
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
+import { useOrderSocket } from '@/hooks/useOrderSocket';
 
 export interface Order {
   id: string;
@@ -21,12 +21,9 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 const getInitialState = (): Order[] => {
-  if (typeof window === 'undefined') {
-    return [];
-  }
+  if (typeof window === 'undefined') return [];
   try {
     const item = window.localStorage.getItem('foodie-orders');
-    // Only load active orders from storage.
     const parsed = item ? JSON.parse(item) : [];
     return parsed.filter((o: Order) => o.status === 'Active');
   } catch (error) {
@@ -37,10 +34,17 @@ const getInitialState = (): Order[] => {
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>(getInitialState);
-  
+
+  // 🔑 Get hotelId / tableNo / userId from localStorage
+  const hotelId = typeof window !== 'undefined' ? Number(localStorage.getItem("hotel_id") || 1) : undefined;
+  const tableNo = typeof window !== 'undefined' ? localStorage.getItem("table_no") || "T1" : undefined;
+  const userId = typeof window !== 'undefined' ? Number(localStorage.getItem("user_id") || 123) : undefined;
+
+  const { activeOrder, createOrder, addItem, closeOrder: socketCloseOrder } = useOrderSocket(hotelId, tableNo, userId);
+
+  // Persist orders in localStorage
   useEffect(() => {
     try {
-      // We only store active orders
       const activeOrders = orders.filter(o => o.status === 'Active');
       window.localStorage.setItem('foodie-orders', JSON.stringify(activeOrders));
     } catch (error) {
@@ -48,12 +52,13 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [orders]);
 
+  // 🆕 Add or update order
   const addOrder = useCallback((newItems: CartItem[], cartTotal: number) => {
     setOrders((prevOrders) => {
       const activeOrder = prevOrders.find(o => o.status === 'Active');
 
       if (activeOrder) {
-        // Merge new items with existing items in the active order
+        // Merge with existing order
         const updatedItems = [...activeOrder.items];
         newItems.forEach(newItem => {
           const existingItemIndex = updatedItems.findIndex(item => item.id === newItem.id);
@@ -63,16 +68,19 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             updatedItems.push(newItem);
           }
         });
-        
+
         const newTotal = updatedItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
-        return prevOrders.map(o => 
-          o.id === activeOrder.id 
-            ? { ...o, items: updatedItems, total: newTotal, date: new Date().toISOString() } 
+        // 🔗 Sync with WebSocket
+        addItem(activeOrder.id, newItems[0]); // (example: add first item; can loop if needed)
+
+        return prevOrders.map(o =>
+          o.id === activeOrder.id
+            ? { ...o, items: updatedItems, total: newTotal, date: new Date().toISOString() }
             : o
         );
       } else {
-        // Create a new order if no active order exists
+        // Create a new order if no active one exists
         const newOrder: Order = {
           id: new Date().getTime().toString(),
           items: newItems,
@@ -80,14 +88,20 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           date: new Date().toISOString(),
           status: 'Active',
         };
+
+        // 🔗 Sync with WebSocket
+        createOrder(newItems.map(i => ({ itemId: i.id, qty: i.quantity, price: i.price })));
+
         return [newOrder, ...prevOrders];
       }
     });
-  }, []);
+  }, [addItem, createOrder]);
 
+  // ❌ Close order
   const closeOrder = useCallback((orderId: string) => {
     setOrders((prevOrders) => prevOrders.filter((o) => o.id !== orderId));
-  }, []);
+    socketCloseOrder(Number(orderId)); // 🔗 sync close with server
+  }, [socketCloseOrder]);
 
   const value = useMemo(() => ({
     orders,
@@ -109,3 +123,4 @@ export const useOrders = () => {
   }
   return context;
 };
+

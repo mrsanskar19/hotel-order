@@ -15,9 +15,11 @@ interface AppSidebarProps {
   onOpenCart: () => void;
   searchTerm: string;
   onSearchTermChange: (term: string) => void;
+  name:string;
+  id:int;
 }
 
-export function AppSidebar({ onOpenCart, searchTerm, onSearchTermChange }: AppSidebarProps) {
+export function AppSidebar({ onOpenCart, searchTerm, onSearchTermChange, name, id }: AppSidebarProps) {
   const { totalItems } = useCart();
   const { orders } = useOrders();
   const pathname = usePathname();
@@ -30,14 +32,14 @@ export function AppSidebar({ onOpenCart, searchTerm, onSearchTermChange }: AppSi
   const activeOrdersCount = isClient ? orders.filter(o => o.status === 'Active').length : 0;
 
   const navItems = [
-    { href: '/', label: 'Menu', icon: Home },
-    { href: './orders', label: 'Orders', icon: ListOrdered, badge: activeOrdersCount },
+    { href: './', label: 'Menu', icon: Home },
+    { href: `./orders`, label: 'Orders', icon: ListOrdered, badge: activeOrdersCount },
   ];
 
   return (
     <aside className="fixed top-0 left-0 h-full w-[250px] border-r bg-background hidden md:flex flex-col z-50">
       <div className="p-4">
-        <h1 className="text-2xl font-bold font-headline text-primary">Foodie Go</h1>
+        <h1 className="text-2xl font-bold font-headline text-primary">{name ||" Foodies Go" } {id}</h1>
       </div>
       <div className="p-4">
         <div className="relative">

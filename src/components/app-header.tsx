@@ -12,9 +12,10 @@ interface AppHeaderProps {
   onOpenCart: () => void;
   searchTerm: string;
   onSearchTermChange: (term: string) => void;
+  name:string;
 }
 
-export function AppHeader({ onOpenCart, searchTerm, onSearchTermChange }: AppHeaderProps) {
+export function AppHeader({ onOpenCart, searchTerm, onSearchTermChange,name }: AppHeaderProps) {
   const { totalItems } = useCart();
   const [isClient, setIsClient] = useState(false);
 
@@ -25,7 +26,7 @@ export function AppHeader({ onOpenCart, searchTerm, onSearchTermChange }: AppHea
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <div className="container flex h-16 items-center justify-between gap-4">
-            <h1 className="text-xl font-bold font-headline text-primary whitespace-nowrap">Foodie Go</h1>
+            <h1 className="text-xl font-bold font-headline text-primary whitespace-nowrap">{name}</h1>
             <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 

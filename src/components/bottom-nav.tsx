@@ -26,16 +26,12 @@ export function BottomNav({ onOpenCart }: BottomNavProps) {
 
   const activeOrdersCount = isClient ? orders.filter(o => o.status === 'Active').length : 0;
 
-  const navItems = [
-    { href: '/', label: 'Menu', icon: Home },
-    { href: '/orders', label: 'Orders', icon: ListOrdered, badge: activeOrdersCount },
-  ];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t z-50 md:hidden">
       <div className="container h-full">
         <div className="grid grid-cols-3 items-center h-full text-center">
-            <Link href="/" className={cn(
+            <Link href="./" className={cn(
               'flex flex-col items-center gap-1 h-full justify-center',
               pathname === '/' ? 'text-primary' : 'text-muted-foreground'
             )}>
@@ -59,7 +55,7 @@ export function BottomNav({ onOpenCart }: BottomNavProps) {
                 </button>
             </div>
             
-            <Link href="/orders" className={cn(
+            <Link href={`./orders`} className={cn(
               'flex flex-col items-center gap-1 relative h-full justify-center',
               pathname === '/orders' ? 'text-primary' : 'text-muted-foreground'
             )}>
