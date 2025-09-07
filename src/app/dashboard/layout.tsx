@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 import * as React from 'react';
-import { redirect, usePathname } from 'next/navigation';
+import { redirect, usePathname, useRouter } from 'next/navigation';
 import {
   ChefHat,
   ClipboardList,
@@ -159,11 +159,11 @@ export default function RootLayout({
 }>) {
   const { isAuthenticated } =useAppData();
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
-  if (!isAuthenticated) redirect('/login');
+  const router = useRouter();
+  if (!isAuthenticated) router.push('/login');
   return (
       <main className="font-body antialiased">
-        {isLoginPage ? children : <MainLayout>{children}</MainLayout>}
+        <MainLayout>{children}</MainLayout>
         <Toaster />
       </main>
   );
