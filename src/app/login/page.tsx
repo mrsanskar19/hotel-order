@@ -27,7 +27,7 @@ export default function LoginPage() {
     try {
       await login(username, password);
       setError("");
-      redirect("/dashboard/dashboard"); // Redirect to dashboard on success
+      router.push("/dashboard/dashboard"); // Redirect to dashboard on success
     } catch (err) {
       setError("Invalid username or password");
     }
@@ -35,7 +35,7 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    redirect("/dashboard/dashboard");
+    router.push("/dashboard/dashboard"); // Redirect to dashboard on success
     return null;
   }
 
