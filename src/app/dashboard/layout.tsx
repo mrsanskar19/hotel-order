@@ -160,7 +160,7 @@ export default function RootLayout({
   const { isAuthenticated } =useAppData();
   const pathname = usePathname();
   const router = useRouter();
-  if (!isAuthenticated) router.push('/login');
+  // if (!isAuthenticated) router.push('/login');
   return (
       <main className="font-body antialiased">
         <MainLayout>{children}</MainLayout>
