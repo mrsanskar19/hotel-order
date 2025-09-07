@@ -1,121 +1,124 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Check } from 'lucide-react';
-import Link from 'next/link';
-
-const pricingTiers = [
-  {
-    name: 'Boutique',
-    monthlyPrice: 99,
-    yearlyPrice: 990,
-    description: 'Perfect for small, independent hotels.',
-    features: [
-      'Up to 20 rooms',
-      'Booking Engine',
-      'Guest Management',
-      'Basic Reporting',
-      'Email Support',
-    ],
-    isPopular: false,
-    cta: 'Choose Boutique',
-  },
-  {
-    name: 'Resort',
-    monthlyPrice: 299,
-    yearlyPrice: 2990,
-    description: 'Ideal for medium-sized hotels and resorts.',
-    features: [
-      'Up to 100 rooms',
-      'All Boutique features',
-      'Dynamic Pricing AI',
-      'Advanced Reporting',
-      'Priority Phone Support',
-    ],
-    isPopular: true,
-    cta: 'Choose Resort',
-  },
-  {
-    name: 'Enterprise',
-    monthlyPrice: null,
-    yearlyPrice: null,
-    description: 'Tailored for large chains and complex needs.',
-    features: [
-      'Unlimited rooms',
-      'All Resort features',
-      'Custom Integrations',
-      'Dedicated Account Manager',
-      '24/7/365 Support',
-    ],
-    isPopular: false,
-    cta: 'Contact Sales',
-  },
-];
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export default function PricingPage() {
-  const [isYearly, setIsYearly] = useState(false);
+  const [visibleSections, setVisibleSections] = useState<string[]>([]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => [...new Set([...prev, entry.target.id])]);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    document.querySelectorAll('.observe').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="py-12 md:py-24">
-      <div className="container">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-headline">Flexible Pricing for Hotels of All Sizes</h1>
-          <p className="mt-4 text-lg text-muted-foreground">Choose the plan that's right for you. No hidden fees, ever.</p>
-        </div>
+    <main className="min-h-screen w-full bg-white text-gray-900">
+      {/* Hero Section */}
+      <section className="relative flex flex-col items-center justify-center h-[70vh] text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-red-100 via-white to-red-50" />
+        <h1 className="relative z-10 text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent animate-fadeInDown">
+            Pricing
+        </h1>
+        <p className="relative z-10 mt-6 text-lg md:text-xl text-gray-600 max-w-2xl">
+          Choose the right plan for your hotel. Transparent, flexible, and designed to
+          simplify order management.
+        </p>
+      </section>
 
-        <div className="flex items-center justify-center space-x-4 mb-10">
-          <Label htmlFor="billing-cycle">Monthly</Label>
-          <Switch id="billing-cycle" checked={isYearly} onCheckedChange={setIsYearly} />
-          <Label htmlFor="billing-cycle">Yearly (Save 2 months)</Label>
-        </div>
+      {/* Pricing Section */}
+      <section
+        id="plans"
+        className={cn(
+          'observe container mx-auto py-24 px-6 opacity-0 translate-y-10 transition-all duration-700',
+          visibleSections.includes('plans') && 'opacity-100 translate-y-0'
+        )}
+      >
+        <h2 className="text-4xl font-bold text-center mb-16">Our Plans</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Starter Plan */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-10 shadow-md hover:shadow-xl transition-shadow duration-500 text-center">
+            <h3 className="text-2xl font-semibold mb-4">Starter</h3>
+            <p className="text-gray-500 mb-6">Best for small hotels & cafes.</p>
+            <p className="text-4xl font-bold text-gray-400 mb-4">Coming Soon</p>
+            <ul className="text-gray-600 space-y-2">
+              <li>✔ Basic order management</li>
+              <li>✔ Simple menu listing</li>
+              <li>✔ Basic reporting</li>
+            </ul>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {pricingTiers.map((tier) => (
-            <Card key={tier.name} className={tier.isPopular ? 'border-primary border-2 shadow-lg' : ''}>
-              <CardHeader>
-                {tier.isPopular && (
-                  <div className="text-center">
-                    <span className="inline-block bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full mb-2">MOST POPULAR</span>
-                  </div>
-                )}
-                <CardTitle className="font-headline text-center text-2xl">{tier.name}</CardTitle>
-                <CardDescription className="text-center">{tier.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center">
-                <div className="text-4xl font-bold mb-6">
-                  {tier.monthlyPrice !== null ? (
-                    <>
-                      ${isYearly ? tier.yearlyPrice : tier.monthlyPrice}
-                      <span className="text-lg font-normal text-muted-foreground">/{isYearly ? 'year' : 'month'}</span>
-                    </>
-                  ) : (
-                    'Custom'
-                  )}
-                </div>
-                <ul className="space-y-3 w-full">
-                  {tier.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-1" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Link href="/buy" className="w-full">
-                  <Button className="w-full" variant={tier.isPopular ? 'default' : 'outline'}>
-                    {tier.cta}
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+          {/* Premium / Demo Highlight */}
+          <div className="relative bg-gradient-to-b from-red-50 to-white border-2 border-red-500 rounded-2xl p-10 shadow-lg hover:shadow-xl transition-shadow duration-500 text-center">
+            <span className="absolute top-3 right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
+              Demo Available
+            </span>
+            <h3 className="text-2xl font-semibold mb-4">Premium</h3>
+            <p className="text-gray-600 mb-6">Perfect for medium-sized hotels.</p>
+            <p className="text-4xl font-bold text-red-600 mb-4">Free Demo</p>
+            <ul className="text-gray-600 space-y-2 mb-6">
+              <li>✔ Full menu customization</li>
+              <li>✔ Smart cart & live orders</li>
+              <li>✔ Analytics dashboard</li>
+              <li>✔ Priority support</li>
+            </ul>
+            <a
+              href="#contact"
+              className="mt-8 inline-block relative overflow-hidden border-2 border-red-600 text-red-600 bg-transparent px-8 py-3 rounded-lg font-medium transition-colors duration-300 ease-in-out group"
+            >
+              <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out group-hover:scale-x-100 bg-red-600" />
+              <span className="relative z-10 group-hover:text-white">Book Now</span>
+            </a>
+          </div>
+
+          {/* Pro Plan */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-10 shadow-md hover:shadow-xl transition-shadow duration-500 text-center">
+            <h3 className="text-2xl font-semibold mb-4">Pro</h3>
+            <p className="text-gray-500 mb-6">For large hotels & restaurant chains.</p>
+            <p className="text-4xl font-bold text-gray-400 mb-4">Coming Soon</p>
+            <ul className="text-gray-600 space-y-2">
+              <li>✔ Multi-branch management</li>
+              <li>✔ Advanced analytics & reports</li>
+              <li>✔ Custom integrations (POS/CRM)</li>
+              <li>✔ 24/7 dedicated support</li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* CTA Section */}
+      <section
+        id="cta"
+        className="bg-gradient-to-r from-red-600 to-red-500 text-white py-24 text-center"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          Ready to Experience the Demo?
+        </h2>
+        <p className="text-lg max-w-2xl mx-auto mb-10">
+          Try our Hotel Order Management Software and see how it simplifies operations,
+          improves guest experience, and boosts efficiency.
+        </p>
+        <a
+          href="#contact"
+          className="relative overflow-hidden border-2 border-white text-white px-10 py-3 rounded-lg font-medium transition-colors duration-300 ease-in-out group"
+        >
+          <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out group-hover:scale-x-100 bg-white" />
+          <span className="relative z-10 group-hover:text-red-600">
+            Contact Us
+          </span>
+        </a>
+      </section>
+    </main>
   );
 }
+

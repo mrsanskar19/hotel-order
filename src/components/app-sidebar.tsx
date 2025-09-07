@@ -16,7 +16,7 @@ interface AppSidebarProps {
   searchTerm: string;
   onSearchTermChange: (term: string) => void;
   name:string;
-  id:int;
+  id:number;
 }
 
 export function AppSidebar({ onOpenCart, searchTerm, onSearchTermChange, name, id }: AppSidebarProps) {
@@ -32,8 +32,8 @@ export function AppSidebar({ onOpenCart, searchTerm, onSearchTermChange, name, i
   const activeOrdersCount = isClient ? orders.filter(o => o.status === 'Active').length : 0;
 
   const navItems = [
-    { href: './', label: 'Menu', icon: Home },
-    { href: `./orders`, label: 'Orders', icon: ListOrdered, badge: activeOrdersCount },
+    { href: `/hotel/${id}`, label: 'Menu', icon: Home },
+    { href: `/hotel/${id}/orders`, label: 'Orders', icon: ListOrdered, badge: activeOrdersCount },
   ];
 
   return (

@@ -6,17 +6,19 @@ export interface Review {
   comment: string;
 }
 
-export interface MenuItem {
+export type MenuItem = {
+  images: any;
   id: number;
   name: string;
-  description: string;
+  category_id: string;
   price: number;
-  rating: number;
-  category: 'Appetizer' | 'Main Course' | 'Dessert' | 'Beverage';
-  images: string[];
-  reviewCount: number;
-  reviews: Review[];
-}
+  imageUrl: string;
+  imageHint?: string;
+  customizable?: boolean;
+  available: boolean;
+  description?: string;
+
+};
 
 export interface Order {
     id: string;

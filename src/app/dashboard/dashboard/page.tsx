@@ -34,16 +34,9 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-
-const kpiData = [
-  {
-    title: 'Revenue Today',
-    value: '$3,450',
-    change: '+12.5%',
-    icon: DollarSign,
-  },
-  { title: 'Orders Today', value: '128', change: '+8.2%', icon: Utensils },
-];
+import { useAppData } from '@/hooks/useAppData';
+import { getData } from '@/lib/api';
+import { getSocket } from '@/lib/socket';
 
 function getStatusBadgeVariant(
   status: Order['status']
@@ -308,6 +301,79 @@ const TableDetailsDialog = ({ tableNumber }: { tableNumber: number }) => {
 };
 
 export default function DashboardPage() {
+  const { hotelId } = useAppData();
+  const [data, setData] = React.useState<any>(null);
+  const [orders, setOrders] = React.useState<Order[]>([]);
+  const [tables, setTables] = React.useState<any[]>([]);
+  const [kip,setKip] = React.useState<any>(null);
+
+  const fetchData = async () => {
+    // Fetch data based on hotelId if needed
+    const hot = await getData(`hotel/${hotelId}`);
+    const kip = await getData(`hotel/${hotelId}/report`);
+    setData(hot);
+    setKip(kip);
+  }
+
+  const fetchDataWs = async () => {
+    if (!hotelId) return;
+    const res = await getData(`orders/hotel/${hotelId}/dashboard`);
+    setTables(res || []);
+    console.log("tables",res)
+  }
+  const socket = getSocket();
+  
+  React.useEffect(() => {
+    fetchData();
+    if (!hotelId) return;
+    // WebSocket fetch for tables and orders
+    fetchDataWs();
+  }, [hotelId]);
+
+  // Helper to get table order status from live orders
+  function getLiveTableStatus(tableId: string | number) {
+    const tableOrders = orders.filter(
+      (o) =>
+        (o.table === tableId || o.table_id === tableId) &&
+        (o.status === 'Pending' || o.status === 'Preparing')
+    );
+
+    if (tableOrders.some((o) => o.status === 'Pending')) {
+      return 'Needs Attention';
+    }
+    if (tableOrders.some((o) => o.status === 'Preparing')) {
+      return 'Occupied';
+    }
+    return 'Available';
+  }
+
+  // Use live table statuses for rendering from tables array
+  const tableStatuses = tables.length > 0
+    ? tables.map((table) => ({
+        id: table.table_id || table.id,
+        status: getLiveTableStatus(table.table_id || table.id),
+      }))
+    : Array.from({ length: 12 }, (_, i) => ({
+        id: i + 1,
+        status: getLiveTableStatus(i + 1),
+      }));
+
+
+const kpiData = [
+  {
+    title: 'Revenue Today',
+    value: `INR${kip?.totalRevenue ?? 0}`,
+    change: '',
+    icon: DollarSign,
+  },
+  {
+    title: 'Orders Today',
+    value: `${kip?.totalOrders ?? 0}`,
+    change: '',
+    icon: Utensils,
+  },
+];
+
   return (
     <div className="grid gap-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -336,6 +402,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {JSON.stringify(tables,orders)}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {tableStatuses.map((table) => (
                 <Dialog key={table.id}>

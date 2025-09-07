@@ -5,7 +5,7 @@ export default function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2">
       <Hotel className="h-6 w-6 text-primary" />
-      <span className="font-headline text-lg font-bold">Desklet</span>
+      <span className="font-headline text-lg font-bold">Foods<span className="text-primary">LinkX</span></span>
     </Link>
   );
 }

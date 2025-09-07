@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle } from 'lucide-react';
 import { postData } from '@/lib/api';
 import { Switch } from '@/components/ui/switch';
+import { useAppData } from '@/hooks/useAppData';
 
 interface AddMenuItemDialogProps {
   itemId?: string;
-  onSave: (item: any) => void;
+  onSave: () => void;
   triggerText?: string;
 }
 
@@ -26,6 +27,7 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
   const [images, setImages] = React.useState<File[]>([]);
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const { hotelId } = useAppData();
 
   // fetch existing item for edit
   React.useEffect(() => {
@@ -33,7 +35,7 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/items/${itemId}`);
+        const res = await fetch(`hotel/${hotelId}/items/${itemId}`);
         const data = await res.json();
         setName(data.name || '');
         setDescription(data.description || '');
@@ -79,19 +81,22 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
         uploadedUrls = await uploadImages(images);
       }
 
+      // prepare payload
       const payload = {
-        id: itemId,
+        category_id: 1, 
+        hotel_id: hotelId!,
         name,
         description,
         price,
-        discount,
-        isCustomized,
-        inStock,
-        images: [...imageUrls, ...uploadedUrls],
+        
+        available:true,
       };
 
-      const savedItem = await postData('/api/items', payload);
-      onSave(savedItem);
+      if (!hotelId) throw new Error('No hotelId set');
+
+      const savedItem = await postData(`hotel/${hotelId}/items`, payload);
+      onSave();
+      console.log('Saved item:', savedItem);
 
       if (!itemId) {
         setName('');
@@ -187,3 +192,93 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
   );
 }
 
+
+export function AddCategroyDialog({ itemId, onSave, triggerText }: AddMenuItemDialogProps) {
+  const [name, setName] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const { hotelId } = useAppData();
+
+  // fetch existing item for edit 
+  React.useEffect(() => {
+    if (!itemId) return;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`hotel/${hotelId}/categories/${itemId}`);
+        const data = await res.json();
+        setName(data.name || '');
+        setDescription(data.description || '');
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [itemId]);
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+
+      // prepare payload
+      const payload = {
+        hotel_id: hotelId!,
+        name,
+        description,
+      };
+
+      if (!hotelId) throw new Error('No hotelId set');
+
+      const savedItem = await postData(`hotel/${hotelId}/categories`, payload);
+      onSave();
+      console.log('Saved item:', savedItem);
+
+      if (!itemId) {
+        setName('');
+        setDescription('');
+      }
+    } catch (err) {
+      console.error('Failed to save item', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" className="h-8 gap-1">
+          <PlusCircle className="h-3.5 w-3.5" />
+          {triggerText || (itemId ? 'Edit Category' : 'Add Category')}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="font-headline">{itemId ? 'Edit Category' : 'Add New Category'}</DialogTitle>
+          <DialogDescription>
+            {itemId ? 'Update the category details below.' : 'Fill in details to add a new category.'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 py-4">
+          {/* name */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">Name</Label>
+            <Input id="name" value={name} disabled={loading} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+          </div>
+          
+          {/* description */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="description" className="text-right">Description</Label>
+            <Textarea id="description" value={description} disabled={loading} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save changes'}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -32,6 +32,8 @@ import 'jspdf-autotable';
 import type { Order } from '@/lib/types';
 
 import { getData } from "@/lib/api";
+import { useParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 
 const UPI_ID = '8767595276@fam';
@@ -44,6 +46,7 @@ type UserInfo = {
 
 export default function OrdersPage() {
   const { orders, closeOrder } = useOrders();
+  const {id} = useParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [sliderStates, setSliderStates] = useState<{ [key: string]: { isLoading: boolean; isSuccess: boolean } }>({});
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);

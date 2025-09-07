@@ -6,7 +6,7 @@ import Footer from '@/components/footer';
 import Chatbot from '@/components/chatbot';
 
 export const metadata: Metadata = {
-  title: 'Desklet',
+  title: 'FoodsLinkX',
   description: 'The ultimate solution for modern hotel order management.',
 };
 
@@ -28,7 +28,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
-        <Chatbot />
+        {/* <Chatbot /> */}
         <Toaster />
       </body>
     </html>

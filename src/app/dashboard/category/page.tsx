@@ -42,9 +42,9 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { menuItems } from '@/lib/data';
-import type { MenuItem } from '@/lib/types';
 
-import { AddMenuItemDialog } from '@/components/AddMenuItemDialog';
+
+import { AddCategroyDialog } from '@/components/AddMenuItemDialog';
 
 import { getData } from '@/lib/api';
 import { useEffect } from 'react';
@@ -57,8 +57,8 @@ export default function MenuPage() {
 
   const filteredItems = items.filter((item) => {
     if (filter === 'all') return true;
-    if (filter === 'in-stock') return item.available;
-    if (filter === 'out-of-stock') return !item.available;
+    if (filter === 'in-stock') return item.inStock;
+    if (filter === 'out-of-stock') return !item.inStock;
     return true;
   });
 
@@ -68,7 +68,8 @@ export default function MenuPage() {
 
   const fetchMenuItems = async () => {
     try {
-      const data = await getData(`hotel/${hotelId}/items`);
+      const data = await getData(`hotel/${hotelId}/categories`);
+      console.log('Fetched categories:', data);
       setItems(data);
     } catch (error) {
       console.error('Error fetching menu items:', error);
@@ -77,7 +78,6 @@ export default function MenuPage() {
   useEffect(() => {
     fetchMenuItems();
     console.log(hotelId, items);
-    
   }, []);
 
   const handleAddItem = async() => {
@@ -93,7 +93,7 @@ export default function MenuPage() {
           <TabsTrigger value="out-of-stock">Out of Stock</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-           <AddMenuItemDialog onSave={()=>handleAddItem()}/>
+           <AddCategroyDialog onSave={()=>handleAddItem()}/>
         </div>
       </div>
       <TabsContent value={filter}>
@@ -111,11 +111,8 @@ export default function MenuPage() {
                   <TableHead className="hidden w-[100px] sm:table-cell">
                     Image
                   </TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>In Stock</TableHead>
-                  <TableHead className="hidden md:table-cell">Price</TableHead>
-                   <TableHead className="hidden md:table-cell">Details</TableHead>
+                  <TableHead>Category Name</TableHead>
+                  <TableHead>Descriptions</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
                   </TableHead>
@@ -135,27 +132,7 @@ export default function MenuPage() {
                       />
                     </TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{item.category_id}</Badge>
-                    </TableCell>
-                    <TableCell>
-                       <Switch
-                        checked={item.available}
-                        onCheckedChange={(checked) => handleStockChange(item.id, checked)}
-                      />
-                      
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      ${item.price.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                        {item.customizable && (
-                            <Badge variant="secondary" className="whitespace-nowrap">
-                                <Sparkles className="mr-1 h-3 w-3" />
-                                Customizable
-                            </Badge>
-                        )}
-                    </TableCell>
+                    <TableCell>{item.description}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

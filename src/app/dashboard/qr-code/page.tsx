@@ -13,21 +13,26 @@ import {
 } from "@/components/ui/card";
 import { Download, Share2 } from "lucide-react";
 
+
+import { useAppData } from "@/hooks/useAppData";
+import { getData } from "@/lib/api";
+
 // Mock API (replace with your real API call)
 async function fetchHotel(hotelId: string) {
   // Example: GET /api/hotels/:id
   return {
     hotel_id: hotelId,
-    name: "Gastronome Hotel",
+    name: "Test",
     table_count: 5, // ← backend should provide this
   };
 }
 
-export default function HotelQrPage({ hotelId = "123" }: { hotelId?: string }) {
+export default function HotelQrPage() {
   const [hotel, setHotel] = React.useState<any>(null);
+  const { hotelId } = useAppData();
 
   React.useEffect(() => {
-    fetchHotel(hotelId).then((data) => setHotel(data));
+    getData(`hotel/${hotelId}`).then((data) => setHotel(data));
   }, [hotelId]);
 
   const downloadQRCode = (svg: SVGSVGElement, filename: string) => {
@@ -59,7 +64,7 @@ export default function HotelQrPage({ hotelId = "123" }: { hotelId?: string }) {
       try {
         await navigator.share({
           files: [file],
-          title: "GastronomeOS Table QR Code",
+          title: `${hotel.name} Table QR Code`,
           text: "Scan to place your order.",
         });
       } catch (error) {
@@ -74,7 +79,7 @@ export default function HotelQrPage({ hotelId = "123" }: { hotelId?: string }) {
 
   return (
     <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array.from({ length: hotel.table_count }).map((_, idx) => {
+      {Array.from({ length: hotel.table_count || 5 }).map((_, idx) => {
         const tableNo = `T${idx + 1}`;
         const qrValue = `${window.location.origin}/hotel/${hotel.hotel_id}?table=${tableNo}`;
         const svgRef = React.createRef<SVGSVGElement>();

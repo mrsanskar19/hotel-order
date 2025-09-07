@@ -76,7 +76,7 @@ export default function ContactPage() {
                   <Mail className="h-8 w-8 text-primary" />
                   <div>
                     <CardTitle className="text-xl">Email</CardTitle>
-                    <p className="text-muted-foreground">support@desklet.com</p>
+                    <p className="text-muted-foreground">foodlinkx.com@gmail.com</p>
                   </div>
                 </CardHeader>
               </Card>
@@ -85,7 +85,7 @@ export default function ContactPage() {
                   <Phone className="h-8 w-8 text-primary" />
                   <div>
                     <CardTitle className="text-xl">Phone</CardTitle>
-                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                    <p className="text-muted-foreground">+91 88620 00814</p>
                   </div>
                 </CardHeader>
               </Card>
@@ -94,7 +94,7 @@ export default function ContactPage() {
                   <MapPin className="h-8 w-8 text-primary" />
                   <div>
                     <CardTitle className="text-xl">Office</CardTitle>
-                    <p className="text-muted-foreground">123 Market St, San Francisco, CA 94103</p>
+                    <p className="text-muted-foreground">Shanti Nagar Bhiwandi,421302</p>
                   </div>
                 </CardHeader>
               </Card>

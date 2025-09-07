@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Accordion,
   AccordionContent,
@@ -7,44 +9,63 @@ import {
 
 const faqs = [
   {
-    question: "What is Desklet?",
-    answer: "Desklet is a comprehensive hotel management software designed to streamline operations, from bookings and pricing to guest management and analytics. Our goal is to provide a single, powerful platform for hotels of all sizes."
+    question: "What is FoodsLinkX?",
+    answer:
+      "FoodsLinkX is a hotel and restaurant order management software that simplifies the way you handle food and service requests. From digital menus to real-time tracking, it helps hotels deliver faster, smarter, and more satisfying guest experiences."
   },
   {
-    question: "Is there a free trial available?",
-    answer: "Yes, we offer a 14-day free trial for our Boutique and Resort plans. No credit card is required to sign up. You can explore all the features and see how Desklet can benefit your business."
+    question: "Do you provide a free demo?",
+    answer:
+      "Yes! We currently offer a free demo of the Premium plan. You can explore all the ordering, customization, and tracking features before deciding. No upfront payment is required to get started."
   },
   {
-    question: "What kind of support do you offer?",
-    answer: "We offer different levels of support based on your plan. All plans include access to our extensive documentation and AI-powered chatbot. The Boutique plan includes email support, the Resort plan adds priority phone support, and the Enterprise plan comes with a dedicated account manager and 24/7/365 support."
+    question: "What plans are available?",
+    answer:
+      "FoodsLinkX offers three flexible plans: Starter (for small hotels and cafés), Premium (ideal for mid-sized hotels), and Pro (for large hotels and chains). The Premium demo is available to try right now."
   },
   {
-    question: "Can Desklet integrate with my existing systems?",
-    answer: "Desklet is designed to be the all-in-one solution. For our Enterprise customers, we offer custom integrations with other systems like accounting software, POS systems, and third-party marketing platforms. Please contact our sales team to discuss your specific needs."
+    question: "Can FoodsLinkX integrate with my existing hotel systems?",
+    answer:
+      "Absolutely. FoodsLinkX is designed to scale with your business. For Pro users, we support integrations with POS systems, accounting tools, CRM, and even custom APIs to connect with your hotel’s ecosystem."
   },
   {
-    question: "Is my data secure?",
-    answer: "Absolutely. We take data security very seriously. All data is encrypted in transit and at rest. We use industry-standard security practices and are compliant with major data protection regulations. Your data and your guests' data are safe with us."
+    question: "Is my hotel and guest data secure?",
+    answer:
+      "Yes, data security is our top priority. All information is encrypted in transit and at rest. FoodsLinkX follows industry best practices to ensure your hotel’s data — and your guests’ data — remains private and safe."
   },
   {
-    question: "Can I change my plan later?",
-    answer: "Yes, you can upgrade or downgrade your plan at any time. Changes will be prorated and reflected in your next billing cycle."
-  }
+    question: "Can I switch plans later?",
+    answer:
+      "Yes, you can upgrade or downgrade at any time. Plan changes are seamless, and any billing adjustments will be prorated to match your usage."
+  },
 ];
 
 export default function FaqPage() {
   return (
-    <div className="py-12 md:py-24">
+    <div className="py-12 md:py-24 bg-white">
       <div className="container max-w-3xl">
+        {/* Heading */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold font-headline">Frequently Asked Questions</h1>
-          <p className="mt-4 text-lg text-muted-foreground">Find answers to common questions about Desklet.</p>
+          <h1 className="text-4xl md:text-5xl font-bold font-headline bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent">
+            Frequently Asked Questions
+          </h1>
+          <p className="mt-4 text-lg text-gray-600">
+            Find answers about FoodsLinkX and how it can help your hotel or restaurant.
+          </p>
         </div>
-        <Accordion type="single" collapsible className="w-full">
+
+        {/* Accordion */}
+        <Accordion type="single" collapsible className="w-full space-y-4">
           {faqs.map((faq, index) => (
-            <AccordionItem key={index} value={`item-${index}`}>
-              <AccordionTrigger className="text-lg font-semibold text-left">{faq.question}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-base">
+            <AccordionItem
+              key={index}
+              value={`item-${index}`}
+              className="border rounded-xl px-4 py-2 hover:shadow-md transition-shadow"
+            >
+              <AccordionTrigger className="text-lg font-semibold text-left hover:text-red-600 transition-colors">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="text-gray-600 text-base leading-relaxed">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
@@ -54,3 +75,4 @@ export default function FaqPage() {
     </div>
   );
 }
+

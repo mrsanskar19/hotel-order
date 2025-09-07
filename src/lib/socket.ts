@@ -1,10 +1,11 @@
 import { io, Socket } from "socket.io-client";
+import { SOCKET_URL } from "./constant";
 
 let socket: Socket | null = null;
 
 export const getSocket = (): Socket => {
   if (!socket) {
-    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL?.replace(/^http/, "ws");
+    const baseUrl = SOCKET_URL
     if (!baseUrl) throw new Error("NEXT_PUBLIC_SERVER_URL is not defined");
 
     socket = io(baseUrl, {
