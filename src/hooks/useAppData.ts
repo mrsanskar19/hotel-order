@@ -139,6 +139,7 @@ export function useAppData(): AppDataHook {
     const response = await postData("auth/login", { username, password });
     const {sub } = response.payload;
     localStorage.setItem("access_token", sub);
+    localStorage.setItem("hotel_id",sub);
     setHotelId(sub);
     setIsAuthenticated(true);
   }, []);
