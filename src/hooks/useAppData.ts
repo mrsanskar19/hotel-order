@@ -1,37 +1,30 @@
-"use client";
+'use client';
 
 import { useEffect, useState, useCallback } from "react";
 import { getSocket } from "@/lib/socket";
 import { getData, postData } from "@/lib/api";
 
 export interface Order {
-  order_id: number; // Changed from id: string
+  order_id: number;
   items: { item_id: number; quantity: number; price: number }[];
-  total_amount: number; // Changed from total
+  total_amount: number;
   status:
     | "PENDING"
     | "CONFIRMED"
     | "PREPARING"
     | "READY"
     | "DELIVERED"
-    | "CANCELLED"; // Changed to match OrderStatus enum
-  created_at: string; // Changed from date
+    | "CANCELLED";
+  created_at: string;
 }
 
 interface AppDataHook {
   hotelId: number | null;
-  tableId: string | null; // Changed from tableNo
+  tableId: string | null;
   activeOrders: Order[];
   closedOrders: Order[];
-  createOrder: (
-    items: { item_id: number; quantity: number; price: number }[],
-    total_amount: number,
-    payment_mode: string
-  ) => Promise<void>;
-  updateOrder: (
-    orderId: number,
-    items: { item_id: number; quantity: number; price: number }[]
-  ) => Promise<void>;
+  createOrder: (items: { item_id: number; quantity: number; price: number }[], total_amount: number, payment_mode: string) => Promise<void>;
+  updateOrder: (orderId: number, items: { item_id: number; quantity: number; price: number }[]) => Promise<void>;
   closeOrder: (orderId: number) => Promise<void>;
   resetAll: () => void;
   login: (username: string, password: string) => Promise<void>;
@@ -40,41 +33,48 @@ interface AppDataHook {
 }
 
 export function useAppData(): AppDataHook {
-  const [hotelId, setHotelId] = useState<number | null>(() => {
-    const saved = localStorage.getItem("hotel_id");
-    return saved ? parseInt(saved) : null;
-  });
-  const [tableId, setTableId] = useState<string | null>(() =>
-    localStorage.getItem("table_id")
-  );
-  const [activeOrders, setActiveOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem("active_orders");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [closedOrders, setClosedOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem("closed_orders");
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    () => !!localStorage.getItem("access_token")
-  );
+  const [hotelId, setHotelId] = useState<number | null>(null);
+  const [tableId, setTableId] = useState<string | null>(null);
+  const [activeOrders, setActiveOrders] = useState<Order[]>([]);
+  const [closedOrders, setClosedOrders] = useState<Order[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  // ---- Local Storage Sync ----
+  // ---- Initialize from localStorage on client ----
   useEffect(() => {
-    if (hotelId) localStorage.setItem("hotel_id", hotelId.toString());
+    if (typeof window !== "undefined") {
+      const savedHotelId = localStorage.getItem("hotel_id");
+      const savedTableId = localStorage.getItem("table_id");
+      const savedActiveOrders = localStorage.getItem("active_orders");
+      const savedClosedOrders = localStorage.getItem("closed_orders");
+      const token = localStorage.getItem("access_token");
+
+      setHotelId(savedHotelId ? parseInt(savedHotelId) : null);
+      setTableId(savedTableId);
+      setActiveOrders(savedActiveOrders ? JSON.parse(savedActiveOrders) : []);
+      setClosedOrders(savedClosedOrders ? JSON.parse(savedClosedOrders) : []);
+      setIsAuthenticated(!!token);
+    }
+  }, []);
+
+  // ---- Sync to localStorage whenever data changes ----
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (hotelId !== null) localStorage.setItem("hotel_id", hotelId.toString());
     else localStorage.removeItem("hotel_id");
+
     if (tableId) localStorage.setItem("table_id", tableId);
     else localStorage.removeItem("table_id");
+
     localStorage.setItem("active_orders", JSON.stringify(activeOrders));
     localStorage.setItem("closed_orders", JSON.stringify(closedOrders));
   }, [hotelId, tableId, activeOrders, closedOrders]);
 
   // ---- WebSocket Handling ----
   useEffect(() => {
+    if (!hotelId || !tableId) return;
     const socket = getSocket();
-    if (hotelId && tableId) {
-      socket.emit("join_hotel", { hotelId, tableId });
-    }
+    socket.emit("join_hotel", { hotelId, tableId });
 
     socket.on("orderCreated", (order: Order) => {
       setActiveOrders((prev) => [...prev, order]);
@@ -82,13 +82,9 @@ export function useAppData(): AppDataHook {
 
     socket.on("orderUpdated", (order: Order) => {
       setActiveOrders((prev) =>
-        prev.map((o) =>
-          o.order_id === order.order_id ? { ...o, ...order } : o
-        )
+        prev.map((o) => (o.order_id === order.order_id ? { ...o, ...order } : o))
       );
-    });
 
-    socket.on("orderUpdated", (order: Order) => {
       if (order.status === "DELIVERED" || order.status === "CANCELLED") {
         setActiveOrders((prev) =>
           prev.filter((o) => o.order_id !== order.order_id)
@@ -103,21 +99,15 @@ export function useAppData(): AppDataHook {
     };
   }, [hotelId, tableId]);
 
-
-
   const createOrder = useCallback(
-    async (
-      items: { item_id: number; quantity: number; price: number }[],
-      total_amount: number,
-      payment_mode: string
-    ) => {
+    async (items: { item_id: number; quantity: number; price: number }[], total_amount: number, payment_mode: string) => {
       if (!hotelId) throw new Error("No hotelId set");
       const order = await postData(`hotel/${hotelId}/orders`, {
         table_id: tableId,
         items,
         total_amount,
         payment_mode,
-        customer_id: 1, // Placeholder; adjust based on auth
+        customer_id: 1,
       });
       setActiveOrders((prev) => [...prev, order]);
     },
@@ -125,18 +115,11 @@ export function useAppData(): AppDataHook {
   );
 
   const updateOrder = useCallback(
-    async (
-      orderId: number,
-      items: { item_id: number; quantity: number; price: number }[]
-    ) => {
+    async (orderId: number, items: { item_id: number; quantity: number; price: number }[]) => {
       if (!hotelId) throw new Error("No hotelId set");
-      const order = await postData(`hotel/${hotelId}/orders/${orderId}`, {
-        items,
-      });
+      const order = await postData(`hotel/${hotelId}/orders/${orderId}`, { items });
       setActiveOrders((prev) =>
-        prev.map((o) =>
-          o.order_id === order.order_id ? { ...o, ...order } : o
-        )
+        prev.map((o) => (o.order_id === order.order_id ? { ...o, ...order } : o))
       );
     },
     [hotelId]
@@ -145,12 +128,8 @@ export function useAppData(): AppDataHook {
   const closeOrder = useCallback(
     async (orderId: number) => {
       if (!hotelId) throw new Error("No hotelId set");
-      const order = await postData(`hotel/${hotelId}/orders/${orderId}`, {
-        status: "DELIVERED",
-      });
-      setActiveOrders((prev) =>
-        prev.filter((o) => o.order_id !== order.order_id)
-      );
+      const order = await postData(`hotel/${hotelId}/orders/${orderId}`, { status: "DELIVERED" });
+      setActiveOrders((prev) => prev.filter((o) => o.order_id !== order.order_id));
       setClosedOrders((prev) => [...prev, order]);
     },
     [hotelId]
@@ -198,3 +177,4 @@ export function useAppData(): AppDataHook {
     isAuthenticated,
   };
 }
+
