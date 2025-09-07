@@ -55,7 +55,7 @@ export default function LoginPage() {
               <Input
                 id="username"
                 type="text"
-                placeholder="hotel_manager"
+                
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
