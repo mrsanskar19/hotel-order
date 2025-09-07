@@ -25,7 +25,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(username, '');
+      await login(username, password);
       setError("");
       redirect("/dashboard/dashboard"); // Redirect to dashboard on success
     } catch (err) {
