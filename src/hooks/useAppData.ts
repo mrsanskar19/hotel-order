@@ -137,9 +137,9 @@ export function useAppData(): AppDataHook {
 
   const login = useCallback(async (username: string, password: string) => {
     const response = await postData("auth/login", { username, password });
-    localStorage.setItem("access_token", response.access_token);
-    const payload = JSON.parse(atob(response.access_token.split(".")[1]));
-    setHotelId(payload.sub);
+    const {sub } = response.payload;
+    localStorage.setItem("access_token", sub);
+    setHotelId(sub);
     setIsAuthenticated(true);
   }, []);
 
