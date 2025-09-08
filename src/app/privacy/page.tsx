@@ -63,9 +63,21 @@ export default function PrivacyPage() {
           </ul>
         </div>
 
-        {/* 5. Security */}
+        {/* 5. Data Security */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">5. Security of Your Data</h2>
+          <h2 className="text-2xl font-bold mb-4">5. Data Security</h2>
+          <p className="text-gray-700 leading-relaxed">
+            We implement a variety of security measures to maintain the safety of your personal information.
+            Your personal information is contained behind secured networks and is only accessible by a limited
+            number of persons who have special access rights to such systems, and are required to keep the
+            information confidential. In addition, all sensitive/credit information you supply is encrypted
+            via Secure Socket Layer (SSL) technology.
+          </p>
+        </div>
+
+        {/* 6. Security of Your Data */}
+        <div>
+          <h2 className="text-2xl font-bold mb-4">6. Security of Your Data</h2>
           <p className="text-gray-700 leading-relaxed">
             We use industry-standard security measures, including encryption and 
             secure data storage, to protect your information against unauthorized access. 
@@ -73,9 +85,9 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-        {/* 6. Your Rights */}
+        {/* 7. Your Rights */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">6. Your Rights</h2>
+          <h2 className="text-2xl font-bold mb-4">7. Your Rights</h2>
           <p className="text-gray-700 leading-relaxed mb-3">
             Depending on your region, you may have the right to:
           </p>
@@ -87,9 +99,9 @@ export default function PrivacyPage() {
           </ul>
         </div>
 
-        {/* 7. Cookies */}
+        {/* 8. Cookies & Tracking */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">7. Cookies & Tracking</h2>
+          <h2 className="text-2xl font-bold mb-4">8. Cookies & Tracking</h2>
           <p className="text-gray-700 leading-relaxed">
             FoodsLinkX uses cookies and similar technologies to improve your 
             experience, analyze usage, and ensure security. You can manage 
@@ -97,18 +109,18 @@ export default function PrivacyPage() {
           </p>
         </div>
 
-        {/* 8. Updates */}
+        {/* 9. Updates to this Policy */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">8. Updates to this Policy</h2>
+          <h2 className="text-2xl font-bold mb-4">9. Updates to this Policy</h2>
           <p className="text-gray-700 leading-relaxed">
             We may update this Privacy Policy from time to time. Updates will 
             be posted on this page with a revised "Last Updated" date.
           </p>
         </div>
 
-        {/* 9. Contact */}
+        {/* 10. Contact Us */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">9. Contact Us</h2>
+          <h2 className="text-2xl font-bold mb-4">10. Contact Us</h2>
           <p className="text-gray-700 leading-relaxed">
             If you have any questions about this Privacy Policy or how we 
             handle your data, please contact us at:
@@ -121,4 +133,3 @@ export default function PrivacyPage() {
     </main>
   );
 }
-
