@@ -17,13 +17,21 @@ export type MenuItem = {
   customizable?: boolean;
   available: boolean;
   description?: string;
+  img?: string;
+  rating?: number;
+  reviewCount?: number;
+  reviews?: Review[];
 
 };
 
 export interface Order {
     id: string;
-    items: any[]; // You might want to type this more strictly, e.g., CartItem[]
+    order_id: string;
+    items: any[]; 
     total: number;
+    total_amount: number;
     date: string;
-    status: 'Active' | 'Closed';
+    status: 'Pending' | 'Preparing' | 'Completed' | 'Cancelled' | 'DELIVERED' | 'PREPARING' | 'PENDING' | 'CANCELLED';
+    table_id: number | string;
+    table?: number | string;
 }

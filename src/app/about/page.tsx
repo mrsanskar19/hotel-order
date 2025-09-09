@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function AboutPage() {
   const [visibleSections, setVisibleSections] = useState<string[]>([]);
@@ -98,16 +99,16 @@ food ordering, enhances guest satisfaction, and streamlines hotel and restaurant
         </p>
 
         {/* 🔴 Book Demo Button (with animated red hover) */}
-        <button
-          className="relative overflow-hidden border-2 border-red-600 text-red-600 bg-transparent px-8 py-3 rounded-lg font-medium transition-colors duration-300 ease-in-out group"
+        <Link
+            href="/contact"
+          className="relative inline-block overflow-hidden border-2 border-red-600 text-red-600 bg-transparent px-8 py-3 rounded-lg font-medium transition-colors duration-300 ease-in-out group"
         >
           <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out pointer-events-none z-0 group-hover:scale-x-100 bg-red-600" />
           <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
             Book Demo
           </span>
-        </button>
+        </Link>
       </section>
     </main>
   );
 }
-

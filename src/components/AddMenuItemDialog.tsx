@@ -10,26 +10,25 @@ import { PlusCircle } from 'lucide-react';
 import { postData } from '@/lib/api';
 import { Switch } from '@/components/ui/switch';
 import { useAppData } from '@/hooks/useAppData';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface AddMenuItemDialogProps {
   itemId?: string;
   onSave: () => void;
   triggerText?: string;
+  categoryId?: string;
 }
 
-export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDialogProps) {
+export function AddMenuItemDialog({ itemId, onSave, triggerText, categoryId }: AddMenuItemDialogProps) {
   const [name, setName] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [price, setPrice] = React.useState<number>(0);
-  const [discount, setDiscount] = React.useState<number>(0);
-  const [isCustomized, setIsCustomized] = React.useState(false);
-  const [inStock, setInStock] = React.useState(true);
+  const [foodType, setFoodType] = React.useState('veg'); // veg or non-veg
   const [images, setImages] = React.useState<File[]>([]);
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(false);
   const { hotelId } = useAppData();
 
-  // fetch existing item for edit
   React.useEffect(() => {
     if (!itemId) return;
     (async () => {
@@ -38,11 +37,14 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
         const res = await fetch(`hotel/${hotelId}/items/${itemId}`);
         const data = await res.json();
         setName(data.name || '');
-        setDescription(data.description || '');
+        const [type, ...descParts] = (data.description || '').split(':');
+        if (descParts.length > 0 && ['veg', 'non-veg'].includes(type)) {
+          setFoodType(type);
+          setDescription(descParts.join(':').trim());
+        } else {
+          setDescription(data.description || '');
+        }
         setPrice(data.price || 0);
-        setDiscount(data.discount || 0);
-        setIsCustomized(data.isCustomized || false);
-        setInStock(data.inStock ?? true);
         setImageUrls(data.images || []);
       } catch (err) {
         console.error(err);
@@ -50,17 +52,23 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
         setLoading(false);
       }
     })();
-  }, [itemId]);
+  }, [itemId, hotelId]);
 
-  // upload to cloudinary
   const uploadImages = async (files: File[]) => {
     const uploadedUrls: string[] = [];
+    const cloudName = "djowkrpwk";
+    const uploadPreset = "Foodslinkx";
+
+    if (!cloudName || !uploadPreset) {
+      throw new Error('Cloudinary environment variables not set');
+    }
+
     for (const file of files) {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_PRESET!); // configure in .env
+      formData.append('upload_preset', uploadPreset);
 
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD!}/image/upload`, {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -75,36 +83,34 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
     try {
       setLoading(true);
 
-      // upload any new images
       let uploadedUrls: string[] = [];
       if (images.length > 0) {
         uploadedUrls = await uploadImages(images);
       }
 
-      // prepare payload
       const payload = {
-        category_id: 1, 
+        category_id: categoryId,
         hotel_id: hotelId!,
         name,
-        description,
+        description: `${foodType}: ${description}`,
         price,
-        
-        available:true,
+        images: [...imageUrls, ...uploadedUrls],
+        available: true,
       };
 
       if (!hotelId) throw new Error('No hotelId set');
 
-      const savedItem = await postData(`hotel/${hotelId}/items`, payload);
+      const url = itemId ? `hotel/${hotelId}/items/${itemId}` : `hotel/${hotelId}/items`;
+      const method = itemId ? 'PUT' : 'POST';
+
+      await postData(url, payload, method);
       onSave();
-      console.log('Saved item:', savedItem);
 
       if (!itemId) {
         setName('');
         setDescription('');
         setPrice(0);
-        setDiscount(0);
-        setIsCustomized(false);
-        setInStock(true);
+        setFoodType('veg');
         setImages([]);
         setImageUrls([]);
       }
@@ -132,50 +138,41 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          {/* name */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">Name</Label>
             <Input id="name" value={name} disabled={loading} onChange={(e) => setName(e.target.value)} className="col-span-3" />
           </div>
 
-          {/* description */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="foodType" className="text-right">Type</Label>
+            <RadioGroup defaultValue="veg" value={foodType} onValueChange={setFoodType} className="flex items-center">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="veg" id="veg" />
+                <Label htmlFor="veg">Veg</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="non-veg" id="non-veg" />
+                <Label htmlFor="non-veg">Non-Veg</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">Description</Label>
             <Textarea id="description" value={description} disabled={loading} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
           </div>
 
-          {/* price */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="price" className="text-right">Price</Label>
             <Input id="price" type="number" value={price} disabled={loading} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} className="col-span-3" />
           </div>
 
-          {/* discount */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="discount" className="text-right">Discount (%)</Label>
-            <Input id="discount" type="number" value={discount} disabled={loading} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} className="col-span-3" />
-          </div>
-
-          {/* isCustomized */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="isCustomized" className="text-right">Customizable</Label>
-            <Switch checked={isCustomized} onCheckedChange={setIsCustomized} />
-          </div>
-
-          {/* inStock */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="inStock" className="text-right">In Stock</Label>
-            <Switch checked={inStock} onCheckedChange={setInStock} />
-          </div>
-
-          {/* images */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="images" className="text-right">Images</Label>
             <Input id="images" type="file" multiple accept="image/*" onChange={(e) => setImages(Array.from(e.target.files || []))} className="col-span-3" />
           </div>
         </div>
 
-        {/* preview uploaded images */}
         {imageUrls.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {imageUrls.map((url, idx) => (
@@ -192,14 +189,12 @@ export function AddMenuItemDialog({ itemId, onSave, triggerText }: AddMenuItemDi
   );
 }
 
-
-export function AddCategroyDialog({ itemId, onSave, triggerText }: AddMenuItemDialogProps) {
+export function AddCategoryDialog({ itemId, onSave, triggerText }: AddMenuItemDialogProps) {
   const [name, setName] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const { hotelId } = useAppData();
 
-  // fetch existing item for edit 
   React.useEffect(() => {
     if (!itemId) return;
     (async () => {
@@ -215,13 +210,12 @@ export function AddCategroyDialog({ itemId, onSave, triggerText }: AddMenuItemDi
         setLoading(false);
       }
     })();
-  }, [itemId]);
+  }, [itemId, hotelId]);
 
   const handleSave = async () => {
     try {
       setLoading(true);
 
-      // prepare payload
       const payload = {
         hotel_id: hotelId!,
         name,
@@ -230,9 +224,11 @@ export function AddCategroyDialog({ itemId, onSave, triggerText }: AddMenuItemDi
 
       if (!hotelId) throw new Error('No hotelId set');
 
-      const savedItem = await postData(`hotel/${hotelId}/categories`, payload);
+      const url = itemId ? `hotel/${hotelId}/categories/${itemId}` : `hotel/${hotelId}/categories`;
+      const method = itemId ? 'PUT' : 'POST';
+
+      await postData(url, payload, method);
       onSave();
-      console.log('Saved item:', savedItem);
 
       if (!itemId) {
         setName('');
@@ -262,13 +258,11 @@ export function AddCategroyDialog({ itemId, onSave, triggerText }: AddMenuItemDi
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          {/* name */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">Name</Label>
             <Input id="name" value={name} disabled={loading} onChange={(e) => setName(e.target.value)} className="col-span-3" />
           </div>
           
-          {/* description */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">Description</Label>
             <Textarea id="description" value={description} disabled={loading} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
@@ -282,3 +276,14 @@ export function AddCategroyDialog({ itemId, onSave, triggerText }: AddMenuItemDi
     </Dialog>
   );
 }
+
+/*
+Cloudinary Configuration:
+
+To enable image uploads, you need to set up a Cloudinary account and configure the following environment variables in your .env.local file:
+
+NEXT_PUBLIC_CLOUDINARY_CLOUD="your_cloud_name"
+NEXT_PUBLIC_CLOUDINARY_PRESET="your_upload_preset"
+
+Replace "your_cloud_name" and "your_upload_preset" with your actual Cloudinary credentials.
+*/

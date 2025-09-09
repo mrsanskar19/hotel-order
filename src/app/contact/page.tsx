@@ -13,19 +13,71 @@ import { Mail, Phone, MapPin } from 'lucide-react';
 export default function ContactPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate form submission
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: 'Message Sent!',
-        description: 'Thank you for contacting us. We will get back to you shortly.',
+
+    // IMPORTANT: Replace with your actual Web3Forms access key
+    const access_key = "YOUR_ACCESS_KEY_HERE"; 
+
+    const data = new FormData();
+    data.append('access_key', access_key);
+    data.append('name', formData.name);
+    data.append('email', formData.email);
+    data.append('subject', formData.subject);
+    data.append('message', formData.message);
+    data.append('redirect', 'https://web3forms.com/success');
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: data,
       });
-      (e.target as HTMLFormElement).reset();
-    }, 1500);
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: 'Message Sent!',
+          description: 'Thank you for contacting us. We will get back to you shortly.',
+        });
+        (e.target as HTMLFormElement).reset();
+        setFormData({
+            name: '',
+            email: '',
+            subject: '',
+            message: '',
+        })
+      } else {
+        toast({
+          title: 'Error!',
+          description: 'There was an error sending your message. Please try again.',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error!',
+        description: 'There was an error sending your message. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,20 +97,20 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" required disabled={isLoading} />
+                      <Input id="name" required disabled={isLoading} value={formData.name} onChange={handleInputChange} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" required disabled={isLoading} />
+                      <Input id="email" type="email" required disabled={isLoading} value={formData.email} onChange={handleInputChange}/>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" required disabled={isLoading} />
+                    <Input id="subject" required disabled={isLoading} value={formData.subject} onChange={handleInputChange}/>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
-                    <Textarea id="message" required rows={6} disabled={isLoading} />
+                    <Textarea id="message" required rows={6} disabled={isLoading} value={formData.message} onChange={handleInputChange}/>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? 'Sending...' : 'Send Message'}

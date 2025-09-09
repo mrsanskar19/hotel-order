@@ -19,6 +19,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Printer, Utensils } from 'lucide-react';
 
+<<<<<<< HEAD
+=======
+import type { Order } from '@/types';
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
 import { cn } from '@/lib/utils';
 import {
   Dialog,
@@ -82,9 +86,15 @@ function getTableStatusColor(status: string) {
 
 const PrintableBill = React.forwardRef<
   HTMLDivElement,
+<<<<<<< HEAD
   { orders: Order[], tableNumber: number }
 >(({ orders: activeOrders, tableNumber }, ref) => {
   const totalBill = activeOrders.reduce((sum, order) => sum + order.total_amount, 0);
+=======
+  { orders: Order[], tableNumber: number | string }
+>(({ orders, tableNumber }, ref) => {
+  const totalBill = orders.reduce((sum, order) => sum + order.total, 0);
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
 
   return (
     <div ref={ref} className="p-4 bg-white text-black">
@@ -98,9 +108,15 @@ const PrintableBill = React.forwardRef<
       <p>Date: {new Date().toLocaleDateString()}</p>
       <Separator className="my-2 bg-black" />
       <div className="space-y-4">
+<<<<<<< HEAD
         {activeOrders.map((order) => (
           <div key={order.order_id}>
             <h4 className="font-semibold">Order #{String(order.order_id).slice(-4)}</h4>
+=======
+        {orders.map((order) => (
+          <div key={order.id}>
+            <h4 className="font-semibold">Order #{order.id.slice(-4)}</h4>
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
             <div className="space-y-1 mt-1">
               {order.items.map((item) => (
                 <div key={item.item_id} className="flex justify-between text-sm">
@@ -143,6 +159,7 @@ const PrintableBill = React.forwardRef<
 PrintableBill.displayName = 'PrintableBill';
 
 
+<<<<<<< HEAD
 const TableDetailsDialog = ({
   tableNumber,
   orders,
@@ -159,6 +176,10 @@ const TableDetailsDialog = ({
   React.useEffect(() => {
     setOrderData(orders.filter((o) => o.table_id === tableNumber));
   }, [orders, tableNumber]);
+=======
+const TableDetailsDialog = ({ tableNumber, orders: initialOrders }: { tableNumber: number | string, orders: Order[] }) => {
+  const [orderData, setOrderData] = React.useState<Order[]>(initialOrders);
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
   const printableRef = React.useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
@@ -174,6 +195,7 @@ const TableDetailsDialog = ({
     }
   };
 
+<<<<<<< HEAD
   const handleCloseOrder = async (orderId: number) => {
     try {
       await postData('orders/close', {
@@ -191,6 +213,15 @@ const TableDetailsDialog = ({
     if (value === 100) {
       handleCloseOrder(orderId);
     }
+=======
+  const handleStatusUpdate = (orderId: string, value: number) => {
+    const updatedOrders = orderData.map((order) =>
+      order.id === orderId
+        ? { ...order, status: value === 100 ? 'Completed' : order.status }
+        : order
+    );
+    setOrderData(updatedOrders);
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
   };
 
   const activeOrders = orderData.filter(
@@ -313,6 +344,7 @@ export default function DashboardPage() {
   const [hotelData, setHotelData] = React.useState<any>(null);
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [tables, setTables] = React.useState<any[]>([]);
+<<<<<<< HEAD
   const [kpi, setKpi] = React.useState<any>(null);
 
   const fetchDashboardData = React.useCallback(async () => {
@@ -347,6 +379,55 @@ export default function DashboardPage() {
       (o) =>
         o.table_id === tableId &&
         (o.status === 'PENDING' || o.status === 'PREPARING')
+=======
+  const [kip,setKip] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  const socket = getSocket();
+  
+  React.useEffect(() => {
+    if (hotelId) {
+      const fetchAllData = async () => {
+          setLoading(true);
+          const [hotelData, kipData, ordersData, tablesData] = await Promise.all([
+              getData(`hotel/${hotelId}`),
+              getData(`hotel/${hotelId}/report`),
+              getData(`orders/hotel/${hotelId}`),
+              getData(`hotel/${hotelId}/tables`) 
+          ]);
+
+          setData(hotelData);
+          setKip(kipData);
+          setOrders(ordersData || []);
+          setTables(tablesData || []);
+          setLoading(false);
+      };
+      fetchAllData();
+
+      socket.on('connect', () => {
+        console.log('connected');
+        socket.emit('join', `hotel_${hotelId}`)
+      })
+
+      socket.on('new_order', (order) => {
+        setOrders((prevOrders) => [order, ...prevOrders]);
+        // You might want to refetch tables or update their status here
+      });
+
+      return () => {
+        socket.off('connect');
+        socket.off('new_order');
+      }
+    }
+  }, [hotelId, socket]);
+
+
+  function getLiveTableStatus(tableId: string | number) {
+    const tableOrders = orders.filter(
+      (o) =>
+        (o.table_id === tableId) &&
+        (o.status === 'Pending' || o.status === 'Preparing')
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
     );
 
     if (tableOrders.some((o) => o.status === 'PENDING')) {
@@ -358,12 +439,20 @@ export default function DashboardPage() {
     return 'Available';
   }
 
+<<<<<<< HEAD
   // Use live table statuses for rendering from tables array
   const tableStatuses = tables.map((table) => ({
     id: table.table_id,
     name: table.name,
     status: getLiveTableStatus(table.table_id),
   }));
+=======
+  const tableStatuses = tables.map((table) => ({
+      id: table.id,
+      status: getLiveTableStatus(table.id),
+    }));
+
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
 
 const kpiData = [
   {
@@ -379,6 +468,10 @@ const kpiData = [
     icon: Utensils,
   },
 ];
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className="grid gap-6">
@@ -408,6 +501,7 @@ const kpiData = [
             </CardDescription>
           </CardHeader>
           <CardContent>
+<<<<<<< HEAD
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {tableStatuses.map((table) => (
                 <Dialog key={table.id}>
@@ -431,6 +525,32 @@ const kpiData = [
                 </Dialog>
               ))}
             </div>
+=======
+            {tables.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {tableStatuses.map((table) => (
+                  <Dialog key={table.id}>
+                    <DialogTrigger asChild>
+                      <div
+                        className={cn(
+                          'flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg transition-all shadow-md hover:scale-105',
+                          getTableStatusColor(table.status)
+                        )}
+                      >
+                        <div className="text-lg font-bold">T{table.id}</div>
+                        <div className="text-xs">{table.status}</div>
+                      </div>
+                    </DialogTrigger>
+                    <TableDetailsDialog tableNumber={table.id} orders={orders.filter(o => o.table_id === table.id)} />
+                  </Dialog>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No tables found. Please add tables in settings.
+              </div>
+            )}
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
           </CardContent>
         </Card>
       </div>
@@ -452,6 +572,7 @@ const kpiData = [
               </TableRow>
             </TableHeader>
             <TableBody>
+<<<<<<< HEAD
               {orders.slice(0, 10).map((order: Order) => (
                 <TableRow key={order.order_id}>
                   <TableCell className="font-medium">{String(order.order_id).slice(-6)}</TableCell>
@@ -464,9 +585,31 @@ const kpiData = [
                   </TableCell>
                   <TableCell>
                     {order.items.reduce((acc, item) => acc + item.quantity, 0)}
+=======
+              {orders.length > 0 ? (
+                orders.slice(0, 5).map((order: Order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">{order.id.slice(-6)}</TableCell>
+                    <TableCell>{order.table_id}</TableCell>
+                    <TableCell>${order.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(order.status)}>
+                        {order.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {order.items.reduce((acc, item) => acc + item.quantity, 0)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    No recent orders found.
+>>>>>>> a21dddb9533f8c2835dedd2b55f99326ba4031f9
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

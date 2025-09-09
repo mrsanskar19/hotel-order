@@ -48,22 +48,42 @@ function ApplicationForm({ jobTitle }: { jobTitle: string }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast({
-        title: 'Application Submitted!',
-        description: `Your application for ${jobTitle} has been received.`,
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const response = await fetch('https://httpbin.org/post', {
+        method: 'POST',
+        body: formData,
       });
-      // Programmatically close the dialog if needed, though DialogClose button works
-      // This requires passing down dialog open state and setter.
-      // For simplicity, we rely on the user clicking the close button.
-      const closeButton = document.getElementById(`close-${jobTitle.replace(/\s/g, '-')}`);
-      closeButton?.click();
-    }, 1500);
+
+      if (response.ok) {
+        toast({
+          title: 'Application Submitted!',
+          description: `Your application for ${jobTitle} has been received.`,
+        });
+        // The dialog can be programmatically closed here if the open state is managed.
+        // For this example, we rely on the user to close it via the UI.
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: 'Error submitting application',
+          description: errorData.message || 'Please try again later.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error submitting application',
+        description: 'An unexpected error occurred. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (

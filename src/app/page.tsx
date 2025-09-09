@@ -2,52 +2,81 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, ShoppingCart, Settings, Zap, Shield, Globe, LineChart, CheckCircle } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, ShoppingCart, Settings, Zap, Shield, Globe, LineChart } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Hamburger, Pizza, Soup, Coffee, Sandwich } from 'lucide-react';
+
+const foodIcons = [
+  { icon: Hamburger, size: 'w-12 h-12' },
+  { icon: Pizza, size: 'w-16 h-16' },
+  { icon: Soup, size: 'w-14 h-14' },
+  { icon: Coffee, size: 'w-12 h-12' },
+  { icon: Sandwich, size: 'w-16 h-16' },
+  { icon: Hamburger, size: 'w-10 h-10' },
+  { icon: Pizza, size: 'w-20 h-20' },
+  { icon: Soup, size: 'w-12 h-12' },
+  { icon: Coffee, size: 'w-14 h-14' },
+  { icon: Sandwich, size: 'w-12 h-12' },
+];
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden bg-background">
       <main className="flex-1">
         {/* Hero Section */}
-       <section className="relative w-full min-h-[80vh] flex items-center justify-center text-center overflow-hidden px-4 py-16 md:py-24 bg-[#FFF9E6]">
-  {/* Decorative Animated Circles */}
-  <div className="absolute -top-10 -left-10 w-40 h-40 bg-red-200 rounded-full opacity-40 animate-ping"></div>
-  <div className="absolute bottom-0 right-0 w-56 h-56 bg-red-300 rounded-full opacity-30 animate-bounce"></div>
+        <section className="relative w-full min-h-[80vh] flex items-center justify-center text-center overflow-hidden px-4 py-16 md:py-24 bg-[#FFF9E6]">
+          {/* Animated Food Icons */}
+          <div className="absolute inset-0 z-0">
+            {foodIcons.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={index}
+                  className="absolute text-red-400 opacity-30 animate-bubble"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    animationDuration: `${Math.random() * 15 + 10}s`,
+                    animationDelay: `${Math.random() * 5}s`,
+                  }}
+                >
+                  <Icon className={item.size} />
+                </div>
+              )
+            })}
+          </div>
 
-  <div className="relative z-20 container max-w-3xl animate-fade-in-up">
-    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 font-headline bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent leading-tight animate-fade-in-down">
-      FoodsLinkX – Smart Hotel Order Management
-    </h1>
-    <p className="mt-6 text-base md:text-xl text-gray-700 leading-relaxed animate-fade-in-up">
-      Streamline food & service requests, manage menus, and delight your guests
-      with real-time, intuitive ordering — all in one powerful platform.
-    </p>
-    <div className="mt-8 flex flex-col gap-4 sm:flex-row justify-center animate-fade-in-up">
-      <Link href="/signup">
-        <Button size="lg" className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105">
-          Book Demo
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Button>
-      </Link>
-      <a href="#features" className="w-full sm:w-auto">
-        <Button
-          size="lg"
-          variant="outline"
-          className="w-full sm:w-auto text-gray-900 border-gray-400 hover:bg-gray-100 transition-transform duration-300 hover:scale-105"
-        >
-          Learn More
-        </Button>
-      </a>
-    </div>
-  </div>
-</section>
+          <div className="relative z-20 container max-w-3xl animate-fade-in-up">
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 font-headline bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent leading-tight animate-fade-in-down">
+              FoodsLinkX – Smart Hotel Order Management
+            </h1>
+            <p className="mt-6 text-base md:text-xl text-gray-700 leading-relaxed animate-fade-in-up">
+              Streamline food & service requests, manage menus, and delight your guests
+              with real-time, intuitive ordering — all in one powerful platform.
+            </p>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row justify-center animate-fade-in-up">
+              <Link href="/contact">
+                <Button size="lg" className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105">
+                  Book Demo
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/contact" className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto text-gray-900 border-gray-400 hover:bg-gray-100 transition-transform duration-300 hover:scale-105"
+                >
+                  Learn More
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {/* Features */}
         <section id="features" className="w-full py-16 md:py-24 bg-white px-4">
@@ -118,7 +147,7 @@ export default function Home() {
             <p className="mb-10 text-base md:text-lg leading-relaxed">
               Experience smarter hotel order management today. Book your demo now and see the difference.
             </p>
-            <Link href="/signup">
+            <Link href="/contact">
               <Button size="lg" variant="outline" className="w-full bg-red sm:w-auto text-white border-white hover:bg-white hover:text-red-600">
                 Book Demo
               </Button>
@@ -157,4 +186,3 @@ function Step({ num, title, desc }: { num: string; title: string; desc: string }
     </div>
   );
 }
-

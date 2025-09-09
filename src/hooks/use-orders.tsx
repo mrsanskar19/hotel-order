@@ -10,11 +10,12 @@ export interface Order {
   total: number;
   date: string;
   status: 'Active' | 'Closed';
+  tableId?: string | number | null;
 }
 
 interface OrderContextType {
   orders: Order[];
-  addOrder: (items: CartItem[], total: number) => void;
+  addOrder: (items: CartItem[], total: number, tableId?: string | number | null) => void;
   closeOrder: (orderId: string) => void;
 }
 
@@ -53,7 +54,7 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [orders]);
 
   // 🆕 Add or update order
-  const addOrder = useCallback((newItems: CartItem[], cartTotal: number) => {
+  const addOrder = useCallback((newItems: CartItem[], cartTotal: number, tableId?: string | number | null) => {
     setOrders((prevOrders) => {
       const activeOrder = prevOrders.find(o => o.status === 'Active');
 
@@ -87,10 +88,11 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           total: cartTotal,
           date: new Date().toISOString(),
           status: 'Active',
+          tableId: tableId,
         };
 
         // 🔗 Sync with WebSocket
-        createOrder(newItems.map(i => ({ itemId: i.id, qty: i.quantity, price: i.price })));
+        createOrder(newItems.map(i => ({ itemId: i.id, qty: i.quantity, price: i.price })), tableId);
 
         return [newOrder, ...prevOrders];
       }
@@ -123,4 +125,3 @@ export const useOrders = () => {
   }
   return context;
 };
-

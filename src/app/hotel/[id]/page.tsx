@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Star, PlusCircle, Settings2, Leaf, Beef } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { menuItems } from "@/data/menu";
 import type { MenuItem } from "@/lib/types";
 import { useCart } from "@/hooks/use-cart";
 
@@ -21,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/ad-banner";
 
 import { getData } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Hotel } from "@/types";
 
 export type DietFilter = "all" | "veg" | "non-veg";
 interface HotelPageProps {
@@ -35,17 +36,33 @@ export default function Home({ params }: HotelPageProps) {
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>("All");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
-  const [hotel, setHotel] = useState(null);
-  const [menu, setMenu] = useState([]);
-  const [cat, setCat] = useState([]);
+  const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [cat, setCat] = useState<any[]>([]);
   const [item, setItem] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tableIdentifier, setTableIdentifier] = useState<string | null>(null);
   const router = useRouter();
 
   const { id } = useParams();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const tableIdFromParams = searchParams.get('table_id');
+    if (tableIdFromParams) {
+      localStorage.setItem('tableId', tableIdFromParams);
+      setTableIdentifier(tableIdFromParams);
+    } else {
+      const storedTableId = localStorage.getItem('tableId');
+      if (storedTableId) {
+        setTableIdentifier(storedTableId);
+      }
+    }
+  }, [searchParams]);
 
   const handleItemClick = (item: MenuItem) => {
     if (!item.available) return;
@@ -59,7 +76,7 @@ export default function Home({ params }: HotelPageProps) {
     notes?: string,
     fromSheet: boolean = false
   ) => {
-    addToCart(item, quantity);
+    addToCart(item, quantity, tableIdentifier);
     if (fromSheet) {
       setIsItemSheetOpen(false);
     }
@@ -84,15 +101,17 @@ export default function Home({ params }: HotelPageProps) {
   };
 
   const filteredMenuItems = useMemo(() => {
-    return item.filter(
+    let itemsToFilter = item;
+    if (selectedCategory !== "All") {
+        itemsToFilter = itemsToFilter.filter(item => item.category_id === selectedCategory);
+    }
+    return itemsToFilter.filter(
       (item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (selectedCategory === "All" || item.category_id === selectedCategory)
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) 
     );
-  }, [searchTerm, selectedCategory, dietFilter]);
+  }, [searchTerm, selectedCategory, item]);
 
   const handleReviewSubmit = () => {
-    // In a real app, this would re-fetch data or update a global state
     toast({
       title: "Review Submitted!",
       description: "Thanks for your feedback.",
@@ -102,28 +121,80 @@ export default function Home({ params }: HotelPageProps) {
   };
 
   useEffect(() => {
-    asyncFuncation();
-  }, []);
+    async function fetchHotelData() {
+      setLoading(true);
+      try {
+        const [hotelData, categoriesData, menuData] = await Promise.all([
+          getData(`hotel/${id}`),
+          getData(`hotel/${id}/categories`),
+          getData(`hotel/${id}/items`)
+        ]);
+        setHotel(hotelData);
+        setCat([{ category_id: "All", name: "All" }, ...categoriesData]);
+        setItem(menuData);
+      } catch (error) {
+        console.error("Failed to fetch hotel data:", error);
+        toast({ variant: "destructive", title: "Failed to load hotel data." });
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchHotelData();
+  }, [id, toast]);
 
-  async function asyncFuncation() {
-    const hotel = await getData(`hotel/${id}`);
-    const cat = await getData(`hotel/${id}/categories`);
-    const menus = await getData(`hotel/${id}/items`);
-    // if(selectedCategory){
-    //   const items = await getData(`hotel/${id}/categories/${selectedCategory}/items`);
-    //   setItem(items)
-    // }else{
-    //   setItem(menus)
-    // }
-    setItem(menus);
-    setCat(cat);
-    setHotel(hotel);
-    console.log(cat);
-    console.log(menus);
+
+  if (loading) {
+    return (
+      <>
+        <div className="flex min-h-screen bg-secondary/20">
+            <AppSidebar.Skeleton />
+            <div className="flex-1 w-full md:pl-[250px]">
+                <AppHeader.Skeleton />
+                <main className="flex-1 pb-24 md:pb-0">
+                    <div className="container py-8">
+                        <div className="space-y-8">
+                            <Skeleton className="h-10 w-1/4" />
+                            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+                                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-24 rounded-full" />)}
+                            </div>
+                             <Skeleton className="h-8 w-1/3 mb-4" />
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {[...Array(8)].map((_, i) => (
+                                    <div key={i} className="flex items-start gap-4 bg-card p-3 rounded-lg shadow-sm">
+                                        <Skeleton className="h-20 w-20 rounded-full" />
+                                        <div className="flex-1 space-y-2">
+                                            <Skeleton className="h-5 w-3/4" />
+                                            <Skeleton className="h-4 w-1/2" />
+                                            <Skeleton className="h-4 w-1/4" />
+                                        </div>
+                                        <Skeleton className="h-10 w-10 rounded-full" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+      </>
+    );
   }
 
   if (!hotel) {
     return <div className="p-6 text-red-500">Hotel not found</div>;
+  }
+
+  if (!tableIdentifier) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-secondary/20">
+        <div className="p-8 bg-card rounded-lg shadow-lg text-center">
+          <h1 className="text-2xl font-bold text-destructive mb-4">Table Not Identified</h1>
+          <p className="text-muted-foreground">
+            Please scan the QR code on your table to proceed.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -135,6 +206,7 @@ export default function Home({ params }: HotelPageProps) {
           onSearchTermChange={setSearchTerm}
           name={hotel.name}
           id={hotel.hotel_id}
+          tableId={tableIdentifier}
         />
         <div className="flex-1 w-full md:pl-[250px]">
           <AppHeader
@@ -142,54 +214,15 @@ export default function Home({ params }: HotelPageProps) {
             searchTerm={searchTerm}
             onSearchTermChange={setSearchTerm}
             name={hotel.name}
+            tableId={tableIdentifier}
           />
           <main className="flex-1 pb-24 md:pb-0">
             <div className="container py-8">
               <div className="space-y-8">
-                <div className="w-full">
-                  <h2 className="mb-3 text-lg font-semibold font-headline">
-                    Dietary
-                  </h2>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant={dietFilter === "all" ? "default" : "secondary"}
-                      size="sm"
-                      className="rounded-full px-4 shadow-sm"
-                      onClick={() => setDietFilter("all")}
-                    >
-                      All
-                    </Button>
-
-                    <Button
-                      variant={dietFilter === "veg" ? "default" : "secondary"}
-                      size="sm"
-                      className="rounded-full px-4 shadow-sm"
-                      onClick={() => setDietFilter("veg")}
-                    >
-                      <Leaf className="mr-2 h-4 w-4 text-green-600" />
-                      Veg
-                    </Button>
-
-                    <Button
-                      variant={
-                        dietFilter === "non-veg" ? "default" : "secondary"
-                      }
-                      size="sm"
-                      className="rounded-full px-4 shadow-sm"
-                      onClick={() => setDietFilter("non-veg")}
-                    >
-                      <Beef className="mr-2 h-4 w-4 text-red-600" />
-                      Non-Veg
-                    </Button>
-                  </div>
-                </div>
-
                 <div>
                   <h2 className="text-xl font-bold font-headline mb-4">
                     Categories
                   </h2>
-                  {JSON.stringify(hotel)}
                   <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
                     {cat.map((category) => (
                       <Button
@@ -214,90 +247,96 @@ export default function Home({ params }: HotelPageProps) {
 
                 <section>
                   <h2 className="text-3xl font-bold font-headline mb-4">
-                    Menu
+                    {selectedCategory === "All" ? "Full Menu" : cat.find(c => c.category_id === selectedCategory)?.name}
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredMenuItems.map((item, index) => (
-                      <React.Fragment key={item.id}>
-                        <div
-                          className={cn(
-                            "flex items-start gap-4 bg-card p-3 rounded-lg shadow-sm transition-all duration-300 group",
-                            item.available
-                              ? "hover:shadow-md hover:bg-secondary/40 cursor-pointer"
-                              : "opacity-60 cursor-not-allowed"
-                          )}
-                          onClick={() => handleItemClick(item)}
-                        >
-                          <div className="relative h-20 w-20 flex-shrink-0">
-                            {/* <Image
-                              src={item?.images[0]}
-                              alt={item.name}
-                              fill
-                              style={{objectFit:"cover"}}
-                              className={cn("rounded-full", !item.available && "grayscale")}
-                              data-ai-hint="food meal"
-                            /> */}
-                            {!item.available && (
-                              <Badge
-                                variant="destructive"
-                                className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4"
-                              >
-                                Unavailable
-                              </Badge>
+                  {filteredMenuItems.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {filteredMenuItems.map((item, index) => (
+                        <React.Fragment key={item.id}>
+                          <div
+                            className={cn(
+                              "flex items-start gap-4 bg-card p-3 rounded-lg shadow-sm transition-all duration-300 group",
+                              item.available
+                                ? "hover:shadow-md hover:bg-secondary/40 cursor-pointer"
+                                : "opacity-60 cursor-not-allowed"
                             )}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <p className="font-headline text-base truncate">
-                              {item?.name}
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
-                              <div className="flex items-center gap-1">
-                                <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                                <span>{item?.rating || "4.5"}</span>
-                              </div>
-                              <span>·</span>
-                              <p className="font-bold">
-                                ₹{item?.price?.toFixed(2)}
-                              </p>
-                              {item?.customizable && (
-                                <>
-                                  <span>·</span>
-                                  <div className="flex items-center gap-1 text-blue-500">
-                                    <Settings2 className="w-3 h-3" />
-                                    <span>Customizable</span>
-                                  </div>
-                                </>
+                            onClick={() => handleItemClick(item)}
+                          >
+                           <div className="relative h-20 w-20 flex-shrink-0">
+                              <Image
+                                src={item?.img || '/placeholder.svg'}
+                                alt={item.name}
+                                fill
+                                style={{objectFit:"cover"}}
+                                className={cn("rounded-full", !item.available && "grayscale")}
+                                data-ai-hint="food meal"
+                              />
+                              {!item.available && (
+                                <Badge
+                                  variant="destructive"
+                                  className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4"
+                                >
+                                  Unavailable
+                                </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1 truncate hidden sm:block">
-                              {item.description}
-                            </p>
-                          </div>
 
-                          <div className="flex-shrink-0 self-center">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="w-10 h-10 rounded-full group-hover:bg-green-500/20 bg-green-500/10 disabled:bg-muted disabled:pointer-events-none"
-                              disabled={!item.available}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddToCart(item);
-                              }}
-                            >
-                              <PlusCircle className="w-7 h-7 text-green-500 transition-transform group-hover:scale-110" />
-                            </Button>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-headline text-base truncate">
+                                {item?.name}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
+                                <div className="flex items-center gap-1">
+                                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                                  <span>{item?.rating || "4.5"}</span>
+                                </div>
+                                <span>·</span>
+                                <p className="font-bold">
+                                  ₹{item?.price?.toFixed(2)}
+                                </p>
+                                {item?.customizable && (
+                                  <>
+                                    <span>·</span>
+                                    <div className="flex items-center gap-1 text-blue-500">
+                                      <Settings2 className="w-3 h-3" />
+                                      <span>Customizable</span>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 truncate hidden sm:block">
+                                {item.description}
+                              </p>
+                            </div>
+
+                            <div className="flex-shrink-0 self-center">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-10 h-10 rounded-full group-hover:bg-green-500/20 bg-green-500/10 disabled:bg-muted disabled:pointer-events-none"
+                                disabled={!item.available}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCart(item);
+                                }}
+                              >
+                                <PlusCircle className="w-7 h-7 text-green-500 transition-transform group-hover:scale-110" />
+                              </Button>
+                            </div>
                           </div>
+                          {(index + 1) % 8 === 0 && (
+                            <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                              <AdBanner adSlot="in_feed_banner" />
+                            </div>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                    ) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                            No items found in this category.
                         </div>
-                        {(index + 1) % 8 === 0 && (
-                          <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
-                            <AdBanner adSlot="in_feed_banner" />
-                          </div>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
+                    )}
                 </section>
               </div>
             </div>
@@ -318,7 +357,6 @@ export default function Home({ params }: HotelPageProps) {
           }
           onWriteReview={() => {
             setIsItemSheetOpen(false);
-            // Delay opening review dialog to allow sheet to close
             setTimeout(() => setIsReviewDialogOpen(true), 300);
           }}
         />
@@ -327,12 +365,13 @@ export default function Home({ params }: HotelPageProps) {
           isOpen={isCartSheetOpen}
           onOpenChange={setIsCartSheetOpen}
           onOrderPlaced={handleOrderPlaced}
+          tableId={tableIdentifier}
         />
 
         <ReviewDialog
           isOpen={isReviewDialogOpen}
           onOpenChange={setIsReviewDialogOpen}
-          itemId={selectedItem?.id}
+          itemId={selectedItem?.id.toString()}
           onSubmit={handleReviewSubmit}
         />
 

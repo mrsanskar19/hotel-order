@@ -6,16 +6,18 @@ import React, { createContext, useContext, useState, useMemo, useCallback, useEf
 
 export interface CartItem extends MenuItem {
   quantity: number;
+  tableId?: string | number | null;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: MenuItem, quantity?: number) => void;
+  addToCart: (item: MenuItem, quantity?: number, tableId?: string | number | null) => void;
   removeFromCart: (itemId: number) => void;
   updateQuantity: (itemId: number, quantity: number) => void;
   clearCart: () => void;
   totalPrice: number;
   totalItems: number;
+  tableId?: string | number | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -44,7 +46,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cartItems]);
 
-  const addToCart = useCallback((item: MenuItem, quantity: number = 1) => {
+  const addToCart = useCallback((item: MenuItem, quantity: number = 1, tableId?: string | number | null) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((i) => i.id === item.id);
       if (existingItem) {
@@ -52,7 +54,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i
         );
       }
-      return [...prevItems, { ...item, quantity }];
+      return [...prevItems, { ...item, quantity, tableId }];
     });
   }, []);
 
@@ -82,6 +84,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
 
+  const tableId = useMemo(() => {
+    return cartItems.length > 0 ? cartItems[0].tableId : null;
+    }, [cartItems]);
+
   const value = useMemo(() => ({
     cartItems,
     addToCart,
@@ -89,8 +95,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateQuantity,
     clearCart,
     totalPrice,
-    totalItems
-  }), [cartItems, addToCart, removeFromCart, updateQuantity, clearCart, totalPrice, totalItems]);
+    totalItems,
+    tableId
+  }), [cartItems, addToCart, removeFromCart, updateQuantity, clearCart, totalPrice, totalItems, tableId]);
 
   return (
     <CartContext.Provider value={value}>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Twitter, Github, Linkedin, Facebook, Instagram, Youtube } from 'lucide-react';
 import Logo from './logo';
 import { usePathname } from 'next/navigation';
+import { Button } from './ui/button';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -57,23 +58,13 @@ export default function Footer() {
           {/* Social Media */}
           <div>
             <h3 className="font-headline text-lg font-semibold">Connect With Us</h3>
-            <div className="mt-4 flex flex-wrap gap-4">
-              <form className="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center">
-    <input
-      type="email"
-      placeholder="Enter your email"
-      className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-    />
-    <button
-      type="submit"
-      className="px-6 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition"
-    >
-      Subscribe
-    </button>
-  </form>
-  <p className="mt-2 text-xs text-muted-foreground">
-    Get the latest updates, product news, and exclusive offers.
-  </p>
+            <div className="mt-4 flex flex-col gap-4">
+                <p className="text-sm text-muted-foreground">
+                    Have questions or want to learn more? Reach out to us.
+                </p>
+                <Link href="/contact">
+                    <Button className="w-full">Contact Us</Button>
+                </Link>
             </div>
           </div>
           
@@ -87,4 +78,3 @@ export default function Footer() {
     </footer>
   );
 }
-
