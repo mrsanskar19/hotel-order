@@ -2,27 +2,43 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, ShoppingCart, Settings, Zap, Shield, Globe, LineChart } from 'lucide-react';
+import {
+  ArrowRight,
+  ShoppingCart,
+  Settings,
+  Zap,
+  Shield,
+  Globe,
+  LineChart,
+  Utensils,
+  Drumstick,
+  IceCream,
+  CupSoda,
+  Cookie,
+  Cake,
+  Apple,
+  Fish,
+} from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Hamburger, Pizza, Soup, Coffee, Sandwich } from 'lucide-react';
 
 const foodIcons = [
-  { icon: Hamburger, size: 'w-12 h-12' },
-  { icon: Pizza, size: 'w-16 h-16' },
-  { icon: Soup, size: 'w-14 h-14' },
-  { icon: Coffee, size: 'w-12 h-12' },
-  { icon: Sandwich, size: 'w-16 h-16' },
-  { icon: Hamburger, size: 'w-10 h-10' },
-  { icon: Pizza, size: 'w-20 h-20' },
-  { icon: Soup, size: 'w-12 h-12' },
-  { icon: Coffee, size: 'w-14 h-14' },
-  { icon: Sandwich, size: 'w-12 h-12' },
+  { icon: Utensils, size: 'w-12 h-12' },
+  { icon: Drumstick, size: 'w-16 h-16' },
+  { icon: IceCream, size: 'w-14 h-14' },
+  { icon: CupSoda, size: 'w-12 h-12' },
+  { icon: Cookie, size: 'w-16 h-16' },
+  { icon: Cake, size: 'w-10 h-10' },
+  { icon: Apple, size: 'w-20 h-20' },
+  { icon: Fish, size: 'w-12 h-12' },
+  { icon: Utensils, size: 'w-14 h-14' },
+  { icon: CupSoda, size: 'w-12 h-12' },
 ];
+
 
 export default function Home() {
   return (
@@ -31,22 +47,24 @@ export default function Home() {
         {/* Hero Section */}
         <section className="relative w-full min-h-[80vh] flex items-center justify-center text-center overflow-hidden px-4 py-16 md:py-24 bg-[#FFF9E6]">
           {/* Animated Food Icons */}
-          <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             {foodIcons.map((item, index) => {
               const Icon = item.icon;
               return (
                 <div
                   key={index}
-                  className="absolute text-red-400 opacity-30 animate-bubble"
+                  className={`absolute text-red-400 opacity-30 ${
+                    index % 2 === 0 ? 'animate-float' : 'animate-drift'
+                  }`}
                   style={{
-                    left: `${Math.random() * 100}%`,
-                    animationDuration: `${Math.random() * 15 + 10}s`,
+                    top: `${Math.random() * 90}%`,
+                    left: `${Math.random() * 90}%`,
                     animationDelay: `${Math.random() * 5}s`,
                   }}
                 >
                   <Icon className={item.size} />
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -55,12 +73,16 @@ export default function Home() {
               FoodsLinkX – Smart Hotel Order Management
             </h1>
             <p className="mt-6 text-base md:text-xl text-gray-700 leading-relaxed animate-fade-in-up">
-              Streamline food & service requests, manage menus, and delight your guests
-              with real-time, intuitive ordering — all in one powerful platform.
+              Streamline food & service requests, manage menus, and delight your
+              guests with real-time, intuitive ordering — all in one powerful
+              platform.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row justify-center animate-fade-in-up">
               <Link href="/contact">
-                <Button size="lg" className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105">
+                <Button
+                  size="lg"
+                  className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105"
+                >
                   Book Demo
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -79,7 +101,10 @@ export default function Home() {
         </section>
 
         {/* Features */}
-        <section id="features" className="w-full py-16 md:py-24 bg-white px-4">
+        <section
+          id="features"
+          className="w-full py-16 md:py-24 bg-white px-4"
+        >
           <div className="container max-w-5xl">
             <div className="text-center mb-12 md:mb-16">
               <span className="inline-block rounded-lg bg-red-50 px-3 py-1 text-sm text-red-600">
@@ -89,51 +114,116 @@ export default function Home() {
                 Everything Your Hotel Needs
               </h2>
               <p className="mt-4 text-gray-600 leading-relaxed text-base md:text-lg max-w-2xl mx-auto">
-                FoodsLinkX gives you the tools to improve service, simplify orders,
-                and gain insights into your hotel’s operations.
+                FoodsLinkX gives you the tools to improve service, simplify
+                orders, and gain insights into your hotel’s operations.
               </p>
             </div>
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-              <Feature icon={<ShoppingCart />} title="Seamless Ordering" desc="Guests and staff can place orders in seconds with a clean, intuitive interface." />
-              <Feature icon={<Settings />} title="Smart Menu Customization" desc="Easily update items, portions, and pricing — tailored for your hotel’s needs." />
-              <Feature icon={<Zap />} title="Real-Time Updates" desc="Track orders live, update status instantly, and keep guests informed." />
-              <Feature icon={<LineChart />} title="Analytics Dashboard" desc="Get insights into top-selling items, revenue trends, and customer preferences." />
-              <Feature icon={<Shield />} title="Secure & Reliable" desc="Enterprise-level security keeps your hotel and guest data safe." />
-              <Feature icon={<Globe />} title="Works Anywhere" desc="Platform-independent. Access FoodsLinkX on any device, anywhere." />
+              <Feature
+                icon={<ShoppingCart />}
+                title="Seamless Ordering"
+                desc="Guests and staff can place orders in seconds with a clean, intuitive interface."
+              />
+              <Feature
+                icon={<Settings />}
+                title="Smart Menu Customization"
+                desc="Easily update items, portions, and pricing — tailored for your hotel’s needs."
+              />
+              <Feature
+                icon={<Zap />}
+                title="Real-Time Updates"
+                desc="Track orders live, update status instantly, and keep guests informed."
+              />
+              <Feature
+                icon={<LineChart />}
+                title="Analytics Dashboard"
+                desc="Get insights into top-selling items, revenue trends, and customer preferences."
+              />
+              <Feature
+                icon={<Shield />}
+                title="Secure & Reliable"
+                desc="Enterprise-level security keeps your hotel and guest data safe."
+              />
+              <Feature
+                icon={<Globe />}
+                title="Works Anywhere"
+                desc="Platform-independent. Access FoodsLinkX on any device, anywhere."
+              />
             </div>
           </div>
         </section>
 
         {/* How It Works */}
-        <section id="how" className="w-full py-16 md:py-24 bg-muted px-4">
+        <section
+          id="how"
+          className="w-full py-16 md:py-24 bg-muted px-4"
+        >
           <div className="container max-w-5xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">How It Works</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">
+              How It Works
+            </h2>
             <p className="max-w-2xl mx-auto text-gray-600 mb-12 leading-relaxed text-base md:text-lg">
               Get started with FoodsLinkX in three simple steps.
             </p>
             <div className="grid gap-10 sm:grid-cols-3">
-              <Step num="1" title="Sign Up" desc="Create your account and hotel profile in minutes. No credit card required." />
-              <Step num="2" title="Set Up Menu & Staff" desc="Add your food items, services, and team members with our guided setup." />
-              <Step num="3" title="Start Managing" desc="Take orders, track status, and view reports — all from one dashboard." />
+              <Step
+                num="1"
+                title="Sign Up"
+                desc="Create your account and hotel profile in minutes. No credit card required."
+              />
+              <Step
+                num="2"
+                title="Set Up Menu & Staff"
+                desc="Add your food items, services, and team members with our guided setup."
+              />
+              <Step
+                num="3"
+                title="Start Managing"
+                desc="Take orders, track status, and view reports — all from one dashboard."
+              />
             </div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="w-full py-16 md:py-24 bg-white px-4">
+        <section
+          id="faq"
+          className="w-full py-16 md:py-24 bg-white px-4"
+        >
           <div className="container max-w-3xl">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">FAQs</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">
+              FAQs
+            </h2>
             <Accordion type="single" collapsible>
               {[
-                { q: "What is FoodsLinkX?", a: "FoodsLinkX is a hotel order management software that helps streamline food ordering, menu customization, and real-time tracking." },
-                { q: "Is there a demo available?", a: "Yes, you can book the Premium demo and explore key features before subscribing." },
-                { q: "Can I switch plans later?", a: "Absolutely. You can upgrade or downgrade anytime — changes are seamless and prorated." },
-                { q: "Does it work on all devices?", a: "Yes, FoodsLinkX is platform-independent. It runs on any device with a web browser." },
-                { q: "Is guest data secure?", a: "Yes, we use enterprise-grade encryption to protect both hotel and guest information." },
+                {
+                  q: 'What is FoodsLinkX?',
+                  a: 'FoodsLinkX is a hotel order management software that helps streamline food ordering, menu customization, and real-time tracking.',
+                },
+                {
+                  q: 'Is there a demo available?',
+                  a: 'Yes, you can book the Premium demo and explore key features before subscribing.',
+                },
+                {
+                  q: 'Can I switch plans later?',
+                  a: 'Absolutely. You can upgrade or downgrade anytime — changes are seamless and prorated.',
+                },
+                {
+                  q: 'Does it work on all devices?',
+                  a: 'Yes, FoodsLinkX is platform-independent. It runs on any device with a web browser.',
+                },
+                {
+                  q: 'Is guest data secure?',
+                  a: 'Yes, we use enterprise-grade encryption to protect both hotel and guest information.',
+                },
               ].map((f, i) => (
                 <AccordionItem key={i} value={`faq-${i}`}>
-                  <AccordionTrigger className="text-lg font-semibold">{f.q}</AccordionTrigger>
-                  <AccordionContent className="text-gray-600 leading-relaxed">{f.a}</AccordionContent>
+                  <AccordionTrigger className="text-lg font-semibold">
+                    {f.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-gray-600 leading-relaxed">
+                    {f.a}
+                  </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
@@ -143,12 +233,19 @@ export default function Home() {
         {/* Final CTA */}
         <section className="w-full py-16 md:py-24 bg-gradient-to-r from-red-600 to-red-500 text-white text-center px-4">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">Ready to Try FoodsLinkX?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+              Ready to Try FoodsLinkX?
+            </h2>
             <p className="mb-10 text-base md:text-lg leading-relaxed">
-              Experience smarter hotel order management today. Book your demo now and see the difference.
+              Experience smarter hotel order management today. Book your demo now
+              and see the difference.
             </p>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="w-full bg-red sm:w-auto text-white border-white hover:bg-white hover:text-red-600">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full bg-red sm:w-auto text-white border-white hover:bg-white hover:text-red-600"
+              >
                 Book Demo
               </Button>
             </Link>
@@ -161,7 +258,15 @@ export default function Home() {
 
 /* ------------------- Reusable Components ------------------- */
 
-function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+function Feature({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start text-center sm:text-left">
       <div className="h-12 w-12 flex items-center justify-center rounded-lg bg-red-50 text-red-600 mx-auto sm:mx-0">
@@ -169,20 +274,32 @@ function Feature({ icon, title, desc }: { icon: React.ReactNode; title: string; 
       </div>
       <div>
         <h3 className="text-lg md:text-xl font-bold font-headline">{title}</h3>
-        <p className="text-gray-600 mt-2 leading-relaxed text-sm md:text-base">{desc}</p>
+        <p className="text-gray-600 mt-2 leading-relaxed text-sm md:text-base">
+          {desc}
+        </p>
       </div>
     </div>
   );
 }
 
-function Step({ num, title, desc }: { num: string; title: string; desc: string }) {
+function Step({
+  num,
+  title,
+  desc,
+}: {
+  num: string;
+  title: string;
+  desc: string;
+}) {
   return (
     <div className="flex flex-col items-center text-center space-y-3">
       <div className="h-12 w-12 flex items-center justify-center rounded-full bg-red-100 text-red-600 text-lg font-bold">
         {num}
       </div>
       <h3 className="text-lg md:text-xl font-bold font-headline">{title}</h3>
-      <p className="text-gray-600 leading-relaxed text-sm md:text-base">{desc}</p>
+      <p className="text-gray-600 leading-relaxed text-sm md:text-base">
+        {desc}
+      </p>
     </div>
   );
 }
