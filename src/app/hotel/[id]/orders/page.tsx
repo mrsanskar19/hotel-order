@@ -9,7 +9,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SlideToConfirm } from '@/components/slide-to-confirm';
-import { Receipt, CreditCard, Landmark, CircleDot, Loader2, QrCode, Download, CheckCircle, User, Phone } from 'lucide-react';
+import { Receipt, Landmark, Loader2, QrCode, Download, CheckCircle, User, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -20,7 +20,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -30,9 +29,10 @@ import { Input } from '@/components/ui/input';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import type { Order } from '@/lib/types';
+import { Hotel } from '@/types';
 
 import { getData } from "@/lib/api";
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 
@@ -47,12 +47,12 @@ type UserInfo = {
 export default function OrdersPage() {
   const { orders, closeOrder } = useOrders();
   const {id} = useParams();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [sliderStates, setSliderStates] = useState<{ [key: string]: { isLoading: boolean; isSuccess: boolean } }>({});
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [orderToClose, setOrderToClose] = useState<Order | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('upi');
-  const [customUpiId, setCustomUpiId] = useState('');
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -60,19 +60,32 @@ export default function OrdersPage() {
   const [isUserInfoNext, setIsUserInfoNext] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo>({ name: '', phone: '' });
 
-  const [hotel,setHotel] = useState(null);
+  const [hotel,setHotel] = useState<Hotel | null>(null);
+  const [tableIdentifier, setTableIdentifier] = useState<string | null>(null);
 
   useEffect(() => {
     // This trick prevents hydration errors by ensuring this component only renders on the client.
     setIsClient(true); 
   }, []);
 
+  useEffect(() => {
+    const tableIdFromParams = searchParams.get('table_id');
+    if (tableIdFromParams) {
+      localStorage.setItem('tableId', tableIdFromParams);
+      setTableIdentifier(tableIdFromParams);
+    } else {
+      const storedTableId = localStorage.getItem('tableId');
+      if (storedTableId) {
+        setTableIdentifier(storedTableId);
+      }
+    }
+  }, [searchParams]);
+
   const handleSlideConfirm = (order: Order) => {
     setOrderToClose(order);
     setPaymentDialogOpen(true);
     setIsPaymentSuccess(false);
     setIsVerifying(false);
-    setCustomUpiId('');
     setIsUserInfoNext(false);
     setUserInfo({ name: '', phone: '' });
   };
@@ -322,37 +335,31 @@ export default function OrdersPage() {
                     <Loader2 className="animate-spin"/>
                 </div>
               )}
-              <p className="font-mono text-sm text-center">Scan to pay <span className='font-bold'>₹{activeOrder?.total.toFixed(2)}</span> <br/> or use the options below.</p>
+              <p className="font-mono text-sm text-center">Scan to pay <span className='font-bold'>₹{activeOrder?.total.toFixed(2)}</span></p>
             </div>
             
             <Button asChild variant="outline" className="w-full">
               <Link href={upiUrl}>Pay with UPI App</Link>
             </Button>
-
-            <div className='text-center text-muted-foreground text-sm'>OR PAY TO UPI ID</div>
-
-            <Input 
-              placeholder="Enter your UPI ID to pay" 
-              value={customUpiId}
-              onChange={(e) => setCustomUpiId(e.target.value)}
-              className="text-center"
-            />
           </div>
         );
-      case 'card':
-        return <p className="text-center text-muted-foreground min-h-[200px] flex items-center justify-center">Card payment options coming soon.</p>;
-      case 'netbanking':
-        return <p className="text-center text-muted-foreground min-h-[200px] flex items-center justify-center">Net banking options coming soon.</p>;
+      case 'cash':
+        return (
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground gap-4 min-h-[200px]">
+                <Landmark className="w-12 h-12 text-primary"/>
+                <p className="font-semibold text-lg">Please pay at the counter.</p>
+            </div>
+        );
       default:
         return null;
     }
   }
 
      useEffect(()=>{
-  asyncFuncation();
+  asyncFunction();
   },[])
 
-  async function asyncFuncation(){
+  async function asyncFunction(){
     const hotel = await getData(`hotel/${id}`);
     setHotel(hotel)
     console.log(hotel)
@@ -372,6 +379,8 @@ export default function OrdersPage() {
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
           name={hotel.name}
+          id={hotel.hotel_id}
+          tableId={tableIdentifier}
         />
         <div className="flex-1 flex flex-col w-full md:ml-[250px]">
             <AppHeader 
@@ -379,6 +388,7 @@ export default function OrdersPage() {
                 searchTerm={searchTerm} 
                 onSearchTermChange={setSearchTerm} 
                 name={hotel.name}
+                tableId={tableIdentifier}
             />
             <main className="flex-1 pb-24 md:pb-0 md:pl-0">
               <div className="container py-8">
@@ -409,16 +419,12 @@ export default function OrdersPage() {
                   {!isVerifying && !isPaymentSuccess && (
                     <div className="flex gap-2">
                       <Button variant={selectedPaymentMethod === 'upi' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('upi')}>
-                        <CircleDot className="w-5 h-5 mr-2"/>
-                        <span className="font-semibold">UPI</span>
+                        <QrCode className="w-5 h-5 mr-2"/>
+                        <span className="font-semibold">UPI / QR Code</span>
                       </Button>
-                      <Button variant={selectedPaymentMethod === 'card' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('card')}>
-                        <CreditCard className="w-5 h-5 mr-2"/>
-                        <span className="font-semibold">Card</span>
-                      </Button>
-                      <Button variant={selectedPaymentMethod === 'netbanking' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('netbanking')}>
+                      <Button variant={selectedPaymentMethod === 'cash' ? 'default' : 'outline'} className="flex-1" onClick={() => setSelectedPaymentMethod('cash')}>
                         <Landmark className="w-5 h-5 mr-2"/>
-                        <span className="font-semibold">Banking</span>
+                        <span className="font-semibold">Cash</span>
                       </Button>
                     </div>
                   )}
@@ -439,7 +445,7 @@ export default function OrdersPage() {
             ) : (
                 <>
                     <Button variant="outline" onClick={() => setIsUserInfoNext(false)}>Back</Button>
-                    <AlertDialogAction onClick={handlePayment} disabled={selectedPaymentMethod === 'upi' && !customUpiId || isVerifying}>
+                    <AlertDialogAction onClick={handlePayment} disabled={isVerifying}>
                         {isVerifying ? <Loader2 className="animate-spin" /> : `Pay ₹${activeOrder?.total.toFixed(2)}`}
                     </AlertDialogAction>
                 </>

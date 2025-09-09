@@ -17,15 +17,21 @@ export type MenuItem = {
   customizable?: boolean;
   available: boolean;
   description?: string;
+  img?: string;
+  rating?: number;
+  reviewCount?: number;
+  reviews?: Review[];
 
 };
 
 export interface Order {
     id: string;
+    order_id: string;
     items: any[]; 
     total: number;
+    total_amount: number;
     date: string;
-    status: 'Pending' | 'Preparing' | 'Completed' | 'Cancelled';
+    status: 'Pending' | 'Preparing' | 'Completed' | 'Cancelled' | 'DELIVERED' | 'PREPARING' | 'PENDING' | 'CANCELLED';
     table_id: number | string;
     table?: number | string;
 }

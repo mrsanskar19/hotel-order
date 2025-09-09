@@ -21,6 +21,7 @@ import { AdBanner } from "@/components/ad-banner";
 
 import { getData } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Hotel } from "@/types";
 
 export type DietFilter = "all" | "veg" | "non-veg";
 interface HotelPageProps {
@@ -37,18 +38,31 @@ export default function Home({ params }: HotelPageProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>("All");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
-  const [hotel, setHotel] = useState(null);
-  const [menu, setMenu] = useState([]);
-  const [cat, setCat] = useState([]);
+  const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [cat, setCat] = useState<any[]>([]);
   const [item, setItem] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tableIdentifier, setTableIdentifier] = useState<string | null>(null);
   const router = useRouter();
 
   const { id } = useParams();
   const searchParams = useSearchParams();
-  const tableId = searchParams.get('table_id');
   const { toast } = useToast();
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const tableIdFromParams = searchParams.get('table_id');
+    if (tableIdFromParams) {
+      localStorage.setItem('tableId', tableIdFromParams);
+      setTableIdentifier(tableIdFromParams);
+    } else {
+      const storedTableId = localStorage.getItem('tableId');
+      if (storedTableId) {
+        setTableIdentifier(storedTableId);
+      }
+    }
+  }, [searchParams]);
 
   const handleItemClick = (item: MenuItem) => {
     if (!item.available) return;
@@ -62,7 +76,7 @@ export default function Home({ params }: HotelPageProps) {
     notes?: string,
     fromSheet: boolean = false
   ) => {
-    addToCart(item, quantity, tableId);
+    addToCart(item, quantity, tableIdentifier);
     if (fromSheet) {
       setIsItemSheetOpen(false);
     }
@@ -131,6 +145,7 @@ export default function Home({ params }: HotelPageProps) {
 
   if (loading) {
     return (
+      <>
         <div className="flex min-h-screen bg-secondary/20">
             <AppSidebar.Skeleton />
             <div className="flex-1 w-full md:pl-[250px]">
@@ -161,11 +176,25 @@ export default function Home({ params }: HotelPageProps) {
                 </main>
             </div>
         </div>
+      </>
     );
   }
 
   if (!hotel) {
     return <div className="p-6 text-red-500">Hotel not found</div>;
+  }
+
+  if (!tableIdentifier) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-secondary/20">
+        <div className="p-8 bg-card rounded-lg shadow-lg text-center">
+          <h1 className="text-2xl font-bold text-destructive mb-4">Table Not Identified</h1>
+          <p className="text-muted-foreground">
+            Please scan the QR code on your table to proceed.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -177,7 +206,7 @@ export default function Home({ params }: HotelPageProps) {
           onSearchTermChange={setSearchTerm}
           name={hotel.name}
           id={hotel.hotel_id}
-          tableId={tableId}
+          tableId={tableIdentifier}
         />
         <div className="flex-1 w-full md:pl-[250px]">
           <AppHeader
@@ -185,7 +214,7 @@ export default function Home({ params }: HotelPageProps) {
             searchTerm={searchTerm}
             onSearchTermChange={setSearchTerm}
             name={hotel.name}
-            tableId={tableId}
+            tableId={tableIdentifier}
           />
           <main className="flex-1 pb-24 md:pb-0">
             <div className="container py-8">
@@ -336,13 +365,13 @@ export default function Home({ params }: HotelPageProps) {
           isOpen={isCartSheetOpen}
           onOpenChange={setIsCartSheetOpen}
           onOrderPlaced={handleOrderPlaced}
-          tableId={tableId}
+          tableId={tableIdentifier}
         />
 
         <ReviewDialog
           isOpen={isReviewDialogOpen}
           onOpenChange={setIsReviewDialogOpen}
-          itemId={selectedItem?.id}
+          itemId={selectedItem?.id.toString()}
           onSubmit={handleReviewSubmit}
         />
 
