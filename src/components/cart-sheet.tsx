@@ -17,9 +17,10 @@ interface CartSheetProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onOrderPlaced: () => void;
+  tableId?: string | number | null;
 }
 
-export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProps) {
+export function CartSheet({ isOpen, onOpenChange, onOrderPlaced, tableId }: CartSheetProps) {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
   const { addOrder } = useOrders();
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +32,7 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced }: CartSheetProp
 
     // Simulate API call
     setTimeout(() => {
-        addOrder(cartItems, totalPrice);
+        addOrder(cartItems, totalPrice, tableId);
         setIsLoading(false);
         setIsSuccess(true);
         

@@ -19,7 +19,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Printer, Utensils } from 'lucide-react';
 
-import { orders } from '@/lib/data';
 import type { Order } from '@/types';
 import { cn } from '@/lib/utils';
 import {
@@ -55,27 +54,6 @@ function getStatusBadgeVariant(
   }
 }
 
-function getTableStatus(tableNumber: number) {
-  const tableOrders = orders.filter(
-    (o) =>
-      o.table === tableNumber &&
-      (o.status === 'Pending' || o.status === 'Preparing')
-  );
-
-  if (tableOrders.some((o) => o.status === 'Pending')) {
-    return 'Needs Attention';
-  }
-  if (tableOrders.some((o) => o.status === 'Preparing')) {
-    return 'Occupied';
-  }
-  return 'Available';
-}
-
-const tableStatuses = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  status: getTableStatus(i + 1),
-}));
-
 function getTableStatusColor(status: string) {
   switch (status) {
     case 'Available':
@@ -91,12 +69,9 @@ function getTableStatusColor(status: string) {
 
 const PrintableBill = React.forwardRef<
   HTMLDivElement,
-  { orders: Order[], tableNumber: number }
+  { orders: Order[], tableNumber: number | string }
 >(({ orders, tableNumber }, ref) => {
-  const activeOrders = orders.filter(
-    (o) => o.status === 'Pending' || o.status === 'Preparing'
-  );
-  const totalBill = activeOrders.reduce((sum, order) => sum + order.total, 0);
+  const totalBill = orders.reduce((sum, order) => sum + order.total, 0);
 
   return (
     <div ref={ref} className="p-4 bg-white text-black">
@@ -110,7 +85,7 @@ const PrintableBill = React.forwardRef<
       <p>Date: {new Date().toLocaleDateString()}</p>
       <Separator className="my-2 bg-black" />
       <div className="space-y-4">
-        {activeOrders.map((order) => (
+        {orders.map((order) => (
           <div key={order.id}>
             <h4 className="font-semibold">Order #{order.id.slice(-4)}</h4>
             <div className="space-y-1 mt-1">
@@ -155,11 +130,8 @@ const PrintableBill = React.forwardRef<
 PrintableBill.displayName = 'PrintableBill';
 
 
-const TableDetailsDialog = ({ tableNumber }: { tableNumber: number }) => {
-  const [orderData, setOrderData] = React.useState<Order[]>(
-    orders.filter((o) => o.table === tableNumber)
-  );
-
+const TableDetailsDialog = ({ tableNumber, orders: initialOrders }: { tableNumber: number | string, orders: Order[] }) => {
+  const [orderData, setOrderData] = React.useState<Order[]>(initialOrders);
   const printableRef = React.useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
@@ -176,7 +148,6 @@ const TableDetailsDialog = ({ tableNumber }: { tableNumber: number }) => {
   };
 
   const handleStatusUpdate = (orderId: string, value: number) => {
-    // Optimistically update the UI
     const updatedOrders = orderData.map((order) =>
       order.id === orderId
         ? { ...order, status: value === 100 ? 'Completed' : order.status }
@@ -306,35 +277,51 @@ export default function DashboardPage() {
   const [orders, setOrders] = React.useState<Order[]>([]);
   const [tables, setTables] = React.useState<any[]>([]);
   const [kip,setKip] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  const fetchData = async () => {
-    // Fetch data based on hotelId if needed
-    const hot = await getData(`hotel/${hotelId}`);
-    const kip = await getData(`hotel/${hotelId}/report`);
-    setData(hot);
-    setKip(kip);
-  }
-
-  const fetchDataWs = async () => {
-    if (!hotelId) return;
-    const res = await getData(`orders/hotel/${hotelId}/dashboard`);
-    setTables(res || []);
-    console.log("tables",res)
-  }
   const socket = getSocket();
   
   React.useEffect(() => {
-    fetchData();
-    if (!hotelId) return;
-    // WebSocket fetch for tables and orders
-    fetchDataWs();
-  }, [hotelId]);
+    if (hotelId) {
+      const fetchAllData = async () => {
+          setLoading(true);
+          const [hotelData, kipData, ordersData, tablesData] = await Promise.all([
+              getData(`hotel/${hotelId}`),
+              getData(`hotel/${hotelId}/report`),
+              getData(`orders/hotel/${hotelId}`),
+              getData(`hotel/${hotelId}/tables`) 
+          ]);
 
-  // Helper to get table order status from live orders
+          setData(hotelData);
+          setKip(kipData);
+          setOrders(ordersData || []);
+          setTables(tablesData || []);
+          setLoading(false);
+      };
+      fetchAllData();
+
+      socket.on('connect', () => {
+        console.log('connected');
+        socket.emit('join', `hotel_${hotelId}`)
+      })
+
+      socket.on('new_order', (order) => {
+        setOrders((prevOrders) => [order, ...prevOrders]);
+        // You might want to refetch tables or update their status here
+      });
+
+      return () => {
+        socket.off('connect');
+        socket.off('new_order');
+      }
+    }
+  }, [hotelId, socket]);
+
+
   function getLiveTableStatus(tableId: string | number) {
     const tableOrders = orders.filter(
       (o) =>
-        (o.table === tableId || o.table_id === tableId) &&
+        (o.table_id === tableId) &&
         (o.status === 'Pending' || o.status === 'Preparing')
     );
 
@@ -347,16 +334,10 @@ export default function DashboardPage() {
     return 'Available';
   }
 
-  // Use live table statuses for rendering from tables array
-  const tableStatuses = tables.length > 0
-    ? tables.map((table) => ({
-        id: table.table_id || table.id,
-        status: getLiveTableStatus(table.table_id || table.id),
-      }))
-    : Array.from({ length: 12 }, (_, i) => ({
-        id: i + 1,
-        status: getLiveTableStatus(i + 1),
-      }));
+  const tableStatuses = tables.map((table) => ({
+      id: table.id,
+      status: getLiveTableStatus(table.id),
+    }));
 
 
 const kpiData = [
@@ -373,6 +354,10 @@ const kpiData = [
     icon: Utensils,
   },
 ];
+
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className="grid gap-6">
@@ -402,25 +387,30 @@ const kpiData = [
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {JSON.stringify(tables,orders)}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {tableStatuses.map((table) => (
-                <Dialog key={table.id}>
-                  <DialogTrigger asChild>
-                    <div
-                      className={cn(
-                        'flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg transition-all shadow-md hover:scale-105',
-                        getTableStatusColor(table.status)
-                      )}
-                    >
-                      <div className="text-lg font-bold">T{table.id}</div>
-                      <div className="text-xs">{table.status}</div>
-                    </div>
-                  </DialogTrigger>
-                  <TableDetailsDialog tableNumber={table.id} />
-                </Dialog>
-              ))}
-            </div>
+            {tables.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {tableStatuses.map((table) => (
+                  <Dialog key={table.id}>
+                    <DialogTrigger asChild>
+                      <div
+                        className={cn(
+                          'flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg transition-all shadow-md hover:scale-105',
+                          getTableStatusColor(table.status)
+                        )}
+                      >
+                        <div className="text-lg font-bold">T{table.id}</div>
+                        <div className="text-xs">{table.status}</div>
+                      </div>
+                    </DialogTrigger>
+                    <TableDetailsDialog tableNumber={table.id} orders={orders.filter(o => o.table_id === table.id)} />
+                  </Dialog>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No tables found. Please add tables in settings.
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -442,21 +432,29 @@ const kpiData = [
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.slice(0, 5).map((order: Order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id.slice(-6)}</TableCell>
-                  <TableCell>{order.table}</TableCell>
-                  <TableCell>${order.total.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(order.status)}>
-                      {order.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {order.items.reduce((acc, item) => acc + item.quantity, 0)}
+              {orders.length > 0 ? (
+                orders.slice(0, 5).map((order: Order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">{order.id.slice(-6)}</TableCell>
+                    <TableCell>{order.table_id}</TableCell>
+                    <TableCell>${order.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(order.status)}>
+                        {order.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {order.items.reduce((acc, item) => acc + item.quantity, 0)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    No recent orders found.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

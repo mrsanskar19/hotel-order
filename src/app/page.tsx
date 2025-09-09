@@ -30,13 +30,13 @@ export default function Home() {
       with real-time, intuitive ordering — all in one powerful platform.
     </p>
     <div className="mt-8 flex flex-col gap-4 sm:flex-row justify-center animate-fade-in-up">
-      <Link href="/signup">
+      <Link href="/contact">
         <Button size="lg" className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105">
           Book Demo
           <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </Link>
-      <a href="#features" className="w-full sm:w-auto">
+      <Link href="/contact" className="w-full sm:w-auto">
         <Button
           size="lg"
           variant="outline"
@@ -44,7 +44,7 @@ export default function Home() {
         >
           Learn More
         </Button>
-      </a>
+      </Link>
     </div>
   </div>
 </section>
@@ -118,7 +118,7 @@ export default function Home() {
             <p className="mb-10 text-base md:text-lg leading-relaxed">
               Experience smarter hotel order management today. Book your demo now and see the difference.
             </p>
-            <Link href="/signup">
+            <Link href="/contact">
               <Button size="lg" variant="outline" className="w-full bg-red sm:w-auto text-white border-white hover:bg-white hover:text-red-600">
                 Book Demo
               </Button>
@@ -157,4 +157,3 @@ function Step({ num, title, desc }: { num: string; title: string; desc: string }
     </div>
   );
 }
-

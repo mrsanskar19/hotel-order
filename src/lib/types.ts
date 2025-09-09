@@ -22,8 +22,10 @@ export type MenuItem = {
 
 export interface Order {
     id: string;
-    items: any[]; // You might want to type this more strictly, e.g., CartItem[]
+    items: any[]; 
     total: number;
     date: string;
-    status: 'Active' | 'Closed';
+    status: 'Pending' | 'Preparing' | 'Completed' | 'Cancelled';
+    table_id: number | string;
+    table?: number | string;
 }

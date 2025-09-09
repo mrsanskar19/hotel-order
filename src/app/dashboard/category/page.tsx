@@ -44,7 +44,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { menuItems } from '@/lib/data';
 
 
-import { AddCategroyDialog } from '@/components/AddMenuItemDialog';
+import { AddCategoryDialog } from '@/components/AddMenuItemDialog';
 
 import { getData } from '@/lib/api';
 import { useEffect } from 'react';
@@ -93,7 +93,7 @@ export default function MenuPage() {
           <TabsTrigger value="out-of-stock">Out of Stock</TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-           <AddCategroyDialog onSave={()=>handleAddItem()}/>
+           <AddCategoryDialog onSave={()=>handleAddItem()}/>
         </div>
       </div>
       <TabsContent value={filter}>
