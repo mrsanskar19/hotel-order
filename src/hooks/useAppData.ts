@@ -8,13 +8,7 @@ export interface Order {
   order_id: number;
   items: { item_id: number; quantity: number; price: number }[];
   total_amount: number;
-  status:
-    | "PENDING"
-    | "CONFIRMED"
-    | "PREPARING"
-    | "READY"
-    | "DELIVERED"
-    | "CANCELLED";
+  status: "PENDING" | "CONFIRMED" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED";
   created_at: string;
 }
 
@@ -39,9 +33,11 @@ export function useAppData(): AppDataHook {
   const [closedOrders, setClosedOrders] = useState<Order[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  // ---- Initialize from localStorage on client ----
+  // ---- Initialize from localStorage (client only) ----
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+
+    try {
       const savedHotelId = localStorage.getItem("hotel_id");
       const savedTableId = localStorage.getItem("table_id");
       const savedActiveOrders = localStorage.getItem("active_orders");
@@ -49,10 +45,12 @@ export function useAppData(): AppDataHook {
       const token = localStorage.getItem("access_token");
 
       setHotelId(savedHotelId ? parseInt(savedHotelId) : null);
-      setTableId(savedTableId);
+      setTableId(savedTableId ?? null);
       setActiveOrders(savedActiveOrders ? JSON.parse(savedActiveOrders) : []);
       setClosedOrders(savedClosedOrders ? JSON.parse(savedClosedOrders) : []);
       setIsAuthenticated(!!token);
+    } catch (err) {
+      console.error("Error restoring state from localStorage", err);
     }
   }, []);
 
@@ -60,14 +58,18 @@ export function useAppData(): AppDataHook {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    if (hotelId !== null) localStorage.setItem("hotel_id", hotelId.toString());
-    else localStorage.removeItem("hotel_id");
+    try {
+      if (hotelId !== null) localStorage.setItem("hotel_id", hotelId.toString());
+      else localStorage.removeItem("hotel_id");
 
-    if (tableId) localStorage.setItem("table_id", tableId);
-    else localStorage.removeItem("table_id");
+      if (tableId) localStorage.setItem("table_id", tableId);
+      else localStorage.removeItem("table_id");
 
-    localStorage.setItem("active_orders", JSON.stringify(activeOrders));
-    localStorage.setItem("closed_orders", JSON.stringify(closedOrders));
+      localStorage.setItem("active_orders", JSON.stringify(activeOrders));
+      localStorage.setItem("closed_orders", JSON.stringify(closedOrders));
+    } catch (err) {
+      console.error("Error saving state to localStorage", err);
+    }
   }, [hotelId, tableId, activeOrders, closedOrders]);
 
   // ---- WebSocket Handling ----
@@ -99,6 +101,7 @@ export function useAppData(): AppDataHook {
     };
   }, [hotelId, tableId]);
 
+  // ---- Actions ----
   const createOrder = useCallback(
     async (items: { item_id: number; quantity: number; price: number }[], total_amount: number, payment_mode: string) => {
       if (!hotelId) throw new Error("No hotelId set");
@@ -137,15 +140,26 @@ export function useAppData(): AppDataHook {
 
   const login = useCallback(async (username: string, password: string) => {
     const response = await postData("auth/login", { username, password });
-    const {sub } = response.payload;
-    localStorage.setItem("access_token", sub);
-    localStorage.setItem("hotel_id",sub);
-    setHotelId(sub);
+
+    // expect response like: { access_token: "jwt", hotel_id: number }
+    
+    const token = response?.access_token;
+    const hotel = response?.sub;
+
+    if (!token || !hotel) throw new Error("Invalid login response");
+
+    localStorage.setItem("access_token", token);
+    localStorage.setItem("hotel_id", hotel.toString());
+    setHotelId(hotel);
     setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(async () => {
-    await postData("auth/logout", {});
+    try {
+      await postData("auth/logout", {});
+    } catch (err) {
+      console.warn("Logout request failed, clearing local storage anyway");
+    }
     localStorage.removeItem("access_token");
     resetAll();
     setIsAuthenticated(false);
@@ -178,4 +192,3 @@ export function useAppData(): AppDataHook {
     isAuthenticated,
   };
 }
-
