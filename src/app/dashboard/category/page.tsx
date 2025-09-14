@@ -2,12 +2,6 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import {
-  MoreHorizontal,
-  PlusCircle,
-  Sparkles,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,15 +11,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
   Table,
   TableBody,
   TableCell,
@@ -33,132 +18,148 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { menuItems } from '@/lib/data';
-
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { AddCategoryDialog } from '@/components/AddMenuItemDialog';
-
-import { getData } from '@/lib/api';
-import { useEffect } from 'react';
+import { getData, deleteData } from '@/lib/api';
 import { useAppData } from '@/hooks/useAppData';
 
 export default function MenuPage() {
-  const [items, setItems] = React.useState(menuItems);
-  const [filter, setFilter] = React.useState('all');
-  const { hotelId } = useAppData();
+  const [items, setItems] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const filteredItems = items.filter((item) => {
-    if (filter === 'all') return true;
-    if (filter === 'in-stock') return item.inStock;
-    if (filter === 'out-of-stock') return !item.inStock;
-    return true;
-  });
-
-  const handleStockChange = (itemId: number, inStock: boolean) => {
-    setItems(items.map(item => item.id === Number(itemId) ? {...item, inStock} : item));
-  };
+  const appData = useAppData();
+  const hotelIdAdmin = appData?.hotelIdAdmin;
 
   const fetchMenuItems = async () => {
+    if (!hotelIdAdmin) return;
+    setLoading(true);
     try {
-      const data = await getData(`hotel/${hotelId}/categories`);
-      console.log('Fetched categories:', data);
+      const data = await getData(`hotel/${hotelIdAdmin}/categories`);
       setItems(data);
     } catch (error) {
       console.error('Error fetching menu items:', error);
+    } finally {
+      setLoading(false);
     }
-  }
-  useEffect(() => {
-    fetchMenuItems();
-    console.log(hotelId, items);
-  }, []);
+  };
 
-  const handleAddItem = async() => {
+  React.useEffect(() => {
     fetchMenuItems();
-  }
+  }, [hotelIdAdmin]);
+
+  const handleAddItem = async () => {
+    fetchMenuItems();
+  };
 
   return (
-    <Tabs defaultValue="all" onValueChange={setFilter}>
-      <div className="flex items-center">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="in-stock">In Stock</TabsTrigger>
-          <TabsTrigger value="out-of-stock">Out of Stock</TabsTrigger>
-        </TabsList>
-        <div className="ml-auto flex items-center gap-2">
-           <AddCategoryDialog onSave={()=>handleAddItem()}/>
-        </div>
+    <div className="space-y-6">
+      {/* Heading Section */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold font-headline">Menu Management</h1>
+        <AddCategoryDialog onSave={handleAddItem} triggerText="Add Category" />
       </div>
-      <TabsContent value={filter}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline">Menu Items</CardTitle>
-            <CardDescription>
-              Manage your restaurant's menu items here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="hidden w-[100px] sm:table-cell">
-                    Image
-                  </TableHead>
-                  <TableHead>Category Name</TableHead>
-                  <TableHead>Descriptions</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredItems.map((item) => (
-                  <TableRow key={item.id}>
+
+      {/* Table Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline">Menu Items</CardTitle>
+          <CardDescription>
+            Manage your restaurant&apos;s categories and items here.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="hidden w-[100px] sm:table-cell">
+                  Image
+                </TableHead>
+                <TableHead className="w-[200px]">Category Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right w-[180px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                // 🔹 Skeleton Rows while loading
+                Array.from({ length: 4 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="hidden sm:table-cell">
+                      <Skeleton className="h-16 w-16 rounded-md" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-64" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-16 rounded" />
+                        <Skeleton className="h-8 w-16 rounded" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : items.length > 0 ? (
+                // 🔹 Real Data Rows
+                items.map((item) => (
+                  <TableRow key={item.category_id}>
                     <TableCell className="hidden sm:table-cell">
                       <Image
                         alt={item.name}
-                        className="aspect-square rounded-md object-cover"
+                        className="aspect-square rounded-md object-cover border"
                         height="64"
-                        src={item?.imageUrl}
+                        src={item?.imageUrl || '/hero.png'}
+                        loading="lazy"
                         width="64"
-                        data-ai-hint={item?.imageHint}
                       />
                     </TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            aria-haspopup="true"
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <TableCell className="text-muted-foreground">
+                      {item.description || 'No description'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <AddCategoryDialog
+                          onSave={handleAddItem}
+                          triggerText="Edit"
+                          itemId={item.category_id}
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={async () => {
+                            try {
+                              await deleteData(
+                                `hotel/${hotelIdAdmin}/categories/${item.category_id}`
+                              );
+                              fetchMenuItems();
+                            } catch (error) {
+                              console.error('Delete failed:', error);
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
+                ))
+              ) : (
+                // 🔹 Empty State
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-6">
+                    No categories found. Add one to get started!
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
+

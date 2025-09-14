@@ -17,12 +17,15 @@ export async function getData(endpoint: string) {
     });
 
     if (!res.ok) {
+    console.log(res)
       throw new Error(`GET ${endpoint} failed: ${res.status} ${res.statusText}`);
     }
 
-    return await res.json();
+    const data = await res.json();
+    console.log(data)
+    return data;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error fetching data:", error,"\nEnpoint: ",endpoint);
     throw error;
   }
 }
@@ -79,4 +82,42 @@ export async function putData(endpoint: string, data: any) {
     console.error("Error putting data:", error);
     throw error;
   }
+}
+
+export async function deleteData(endpoint: string) {
+  try {
+    const baseUrl = BACKEND_URL;
+    if (!baseUrl) {
+      throw new Error("NEXT_PUBLIC_SERVER_URL is not defined in .env");
+    }
+
+    const res = await fetch(`${baseUrl}${endpoint}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`DELETE ${endpoint} failed: ${res.status} ${res.statusText}`);
+    }
+
+    const resdata = await res.json();
+    console.log("Deleted:", resdata);
+    return resdata;
+  } catch (error) {
+    console.error("Error deleting data:", error);
+    throw error;
+  }
+}
+
+
+export async function patchData(endpoint: string, data: any) {
+  const res = await fetch(`${BACKEND_URL}${endpoint}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`PATCH ${endpoint} failed: ${res.status}`);
+  return res.json();
 }

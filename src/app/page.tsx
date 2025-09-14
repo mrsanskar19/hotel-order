@@ -42,6 +42,7 @@ const foodIcons = [
 
 export default function Home() {
   return (
+    <>
     <div className="flex flex-col min-h-screen overflow-x-hidden bg-background">
       <main className="flex-1">
         {/* Hero Section */}
@@ -81,7 +82,7 @@ export default function Home() {
               <Link href="/contact">
                 <Button
                   size="lg"
-                  className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105"
+                  className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105 bg-primary"
                 >
                   Book Demo
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -253,6 +254,7 @@ export default function Home() {
         </section>
       </main>
     </div>
+    </>
   );
 }
 

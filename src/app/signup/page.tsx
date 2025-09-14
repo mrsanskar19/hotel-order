@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useState } from 'react';
+import { postData } from "@/lib/api";
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -28,12 +29,7 @@ export default function SignupPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/hotel/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await postData('hotel', {
           name,
           username,
           description,
@@ -43,13 +39,7 @@ export default function SignupPage() {
           password,
           active_time: activeTime,
           parcel_available: parcelAvailable,
-        }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Something went wrong');
-      }
 
       // Handle successful signup, e.g., redirect to login
       window.location.href = '/login';

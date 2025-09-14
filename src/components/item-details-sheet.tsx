@@ -53,6 +53,8 @@ export function ItemDetailsSheet({ item, isOpen, onOpenChange, onAddToCart }: It
 
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 min-h-0">
           <div className="relative h-full w-full min-h-64 md:min-h-0">
+          <Image src={item.img} alt="trst" layout="fill" objectFit="cover" data-ai-hint="food meal" className="md:rounded-l-lg"/>
+          {/*
             <Carousel className="w-full h-full">
               <CarouselContent className="h-full">
                 {item.images.map((img, index) => (
@@ -70,13 +72,14 @@ export function ItemDetailsSheet({ item, isOpen, onOpenChange, onAddToCart }: It
                 </>
               )}
             </Carousel>
+            */}
           </div>
           
           <div className="flex flex-col relative">
             <ScrollArea className="flex-1">
               <div className="p-6 md:p-8">
                 <div className="flex items-center gap-4 text-muted-foreground pt-2">
-                  <Badge>{item.category}</Badge>
+                  <Badge>{item?.category_id}</Badge>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                     <span className="font-semibold">{item.rating}</span>

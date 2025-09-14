@@ -19,9 +19,9 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { AdBanner } from "@/components/ad-banner";
 
-import { getData } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Hotel } from "@/types";
+import { getData } from "@/lib/api";
 
 export type DietFilter = "all" | "veg" | "non-veg";
 interface HotelPageProps {
@@ -102,9 +102,16 @@ export default function Home({ params }: HotelPageProps) {
 
   const filteredMenuItems = useMemo(() => {
     let itemsToFilter = item;
-    if (selectedCategory !== "All") {
-        itemsToFilter = itemsToFilter.filter(item => item.category_id === selectedCategory);
+    
+    // Handle veg/non-veg categories
+    if (selectedCategory === "veg") {
+      itemsToFilter = itemsToFilter.filter(item => item.veg_type === "veg");
+    } else if (selectedCategory === "non-veg") {
+      itemsToFilter = itemsToFilter.filter(item => item.veg_type === "non-veg");
+    } else if (selectedCategory !== "All") {
+      itemsToFilter = itemsToFilter.filter(item => item.category_id === selectedCategory);
     }
+    
     return itemsToFilter.filter(
       (item) =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) 
@@ -129,9 +136,47 @@ export default function Home({ params }: HotelPageProps) {
           getData(`hotel/${id}/categories`),
           getData(`hotel/${id}/items`)
         ]);
+        
+        console.log(hotelData);
         setHotel(hotelData);
-        setCat([{ category_id: "All", name: "All" }, ...categoriesData]);
-        setItem(menuData);
+        
+        // Add fixed veg/non-veg categories along with regular categories
+        const allCategories = [
+          { category_id: "All", name: "All" },
+          { category_id: "veg", name: "Vegetarian" },
+          { category_id: "non-veg", name: "Non-Vegetarian" },
+          ...categoriesData
+        ];
+        setCat(allCategories);
+        
+        // Process menu items to extract veg_type from description
+        const processedMenuItems = menuData.map((menuItem: any) => {
+          let veg_type: 'veg' | 'non-veg' = 'veg'; // default
+          let processedDescription = menuItem.description;
+
+          if (menuItem.description && menuItem.description.includes(':')) {
+            const parts = menuItem.description.split(':');
+            const typeIndicator = parts[0].trim().toLowerCase();
+            
+            if (typeIndicator === 'non-veg' || typeIndicator === 'nonveg' || typeIndicator === 'non veg') {
+              veg_type = 'non-veg';
+            } else if (typeIndicator === 'veg' || typeIndicator === 'vegetarian') {
+              veg_type = 'veg';
+            }
+            
+            // Remove the type indicator from description
+            processedDescription = parts.slice(1).join(':').trim();
+          }
+
+          return {
+            ...menuItem,
+            veg_type,
+            description: processedDescription,
+            id: menuItem.item_id // Ensure we have both id and item_id for compatibility
+          };
+        });
+        
+        setItem(processedMenuItems);
       } catch (error) {
         console.error("Failed to fetch hotel data:", error);
         toast({ variant: "destructive", title: "Failed to load hotel data." });
@@ -141,7 +186,6 @@ export default function Home({ params }: HotelPageProps) {
     }
     fetchHotelData();
   }, [id, toast]);
-
 
   if (loading) {
     return (
@@ -238,6 +282,8 @@ export default function Home({ params }: HotelPageProps) {
                         className="shrink-0 rounded-full"
                       >
                         {category.name}
+                        {category.category_id === "veg" && <Leaf className="w-4 h-4 ml-1 text-green-600" />}
+                        {category.category_id === "non-veg" && <Beef className="w-4 h-4 ml-1 text-red-600" />}
                       </Button>
                     ))}
                   </div>
@@ -247,7 +293,10 @@ export default function Home({ params }: HotelPageProps) {
 
                 <section>
                   <h2 className="text-3xl font-bold font-headline mb-4">
-                    {selectedCategory === "All" ? "Full Menu" : cat.find(c => c.category_id === selectedCategory)?.name}
+                    {selectedCategory === "All" ? "Full Menu" : 
+                     selectedCategory === "veg" ? "Vegetarian Items" :
+                     selectedCategory === "non-veg" ? "Non-Vegetarian Items" :
+                     cat.find(c => c.category_id === selectedCategory)?.name}
                   </h2>
                   {filteredMenuItems.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -279,6 +328,18 @@ export default function Home({ params }: HotelPageProps) {
                                   Unavailable
                                 </Badge>
                               )}
+                              {/* Veg/Non-veg indicator */}
+                              <div className="absolute bottom-0 left-0 -translate-y-1/2 translate-x-1/4">
+                                {item.veg_type === "veg" ? (
+                                  <div className="bg-green-500 text-white p-1 rounded-full">
+                                    <Leaf className="w-3 h-3" />
+                                  </div>
+                                ) : (
+                                  <div className="bg-red-500 text-white p-1 rounded-full">
+                                    <Beef className="w-3 h-3" />
+                                  </div>
+                                )}
+                              </div>
                             </div>
 
                             <div className="flex-1 min-w-0">
@@ -371,7 +432,7 @@ export default function Home({ params }: HotelPageProps) {
         <ReviewDialog
           isOpen={isReviewDialogOpen}
           onOpenChange={setIsReviewDialogOpen}
-          itemId={selectedItem?.id.toString()}
+          itemId={selectedItem?.id}
           onSubmit={handleReviewSubmit}
         />
 

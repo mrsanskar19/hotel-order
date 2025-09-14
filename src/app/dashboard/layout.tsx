@@ -13,6 +13,7 @@ import {
   QrCode,
   Settings,
   UtensilsCrossed,
+  Box
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -37,7 +38,7 @@ import { getData } from '@/lib/api';
 const navItems = [
   { href: './dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: './menu', icon: UtensilsCrossed, label: 'Menu' },
-  { href: './category', icon: UtensilsCrossed, label: 'Category' },
+  { href: './category', icon: Box, label: 'Category' },
   { href: './orders', icon: ClipboardList, label: 'Orders' },
   { href: './reviews', icon: MessageSquare, label: 'Reviews' },
   { href: './qr-code', icon: QrCode, label: 'QR Code' },
@@ -69,18 +70,20 @@ const MobileBottomNav = () => {
 };
 
 function MainLayout({ children }: { children: React.ReactNode }) {
-  const { hotelId } = useAppData();
+  const { hotelIdAdmin,logout } = useAppData();
+  const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const currentNavItem = navItems.find((item) => pathname.startsWith(item.href));
   const [hotelData, setHotelData] = React.useState<any>(null);
   const fetchData = async () => {
-    const response = await getData(`hotel/${hotelId}`);
+    const response = await getData(`hotel/${hotelIdAdmin}`);
+    console.log(response)
     setHotelData(response);
   }
   React.useEffect(() => {
     fetchData();
-  },[])
+  },[hotelIdAdmin])
 
   return (
     <SidebarProvider>
@@ -138,8 +141,8 @@ function MainLayout({ children }: { children: React.ReactNode }) {
               {currentNavItem?.label}
             </h1>
           </div>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/login">Logout</Link>
+          <Button asChild variant="outline" size="sm" onClick={()=>{logout();router.push("/login")}}>
+            Logout
           </Button>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 md:pb-6 pb-20">
