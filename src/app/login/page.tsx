@@ -24,17 +24,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   // Handle authentication check and redirect
   useEffect(() => {
-    if (!isLoading && !hasCheckedAuth) {
-      setHasCheckedAuth(true);
-      if (isAuthenticated) {
-        router.push("/dashboard/dashboard");
-      }
+    if (isAuthenticated && !isLoading) {
+      router.push("/dashboard");
     }
-  }, [isAuthenticated, isLoading, router, hasCheckedAuth]);
+  }, [isAuthenticated, isLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +42,6 @@ export default function LoginPage() {
 
     try {
       await login(username, password);
-      // Don't redirect here - let the useEffect handle it
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || "Invalid username or password");
@@ -55,8 +50,8 @@ export default function LoginPage() {
     }
   };
 
-  // Show loading spinner while checking authentication
-  if (isLoading || (isAuthenticated && hasCheckedAuth)) {
+  // Show loading spinner while checking authentication or redirecting
+  if (isLoading || isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
         <div className="flex flex-col items-center gap-4">
@@ -67,11 +62,6 @@ export default function LoginPage() {
         </div>
       </div>
     );
-  }
-
-  // Don't render login form if already authenticated
-  if (isAuthenticated) {
-    return null;
   }
 
   return (

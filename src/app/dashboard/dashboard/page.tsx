@@ -69,11 +69,11 @@ function getStatusBadgeVariant(
 
 function getTableStatusColor(status: string) {
   switch (status) {
-    case 'Available':
+    case 'FREE':
       return 'bg-white border hover:bg-muted';
-    case 'Occupied':
+    case 'OCCUPIED':
       return 'bg-yellow-200';
-    case 'Needs Attention':
+    case 'NEEDS_ATTENTION':
       return 'bg-red-300';
     default:
       return 'bg-gray-200';
@@ -334,34 +334,22 @@ export default function DashboardPage() {
   const { hotelIdAdmin } = useAppData();
   const [hotelData, setHotelData] = React.useState<any>(null);
   const [orders, setOrders] = React.useState<Order[]>([]);
-  const [tables, setTables] = React.useState<any[]>([]);
+  const [tableStatuses, setTableStatuses] = React.useState<any[]>([]);
   const [kpi, setKpi] = React.useState<any>(null);
 
   const fetchDashboardData = React.useCallback(async () => {
     if (!hotelIdAdmin) return;
     try {
-      const [hotel, report, dashboardData] = await Promise.all([
+      const [hotel, report, dashboardData, statuses] = await Promise.all([
         getData(`hotel/${hotelIdAdmin}`),
         getData(`hotel/${hotelIdAdmin}/report`),
         getData(`orders/hotel/${hotelIdAdmin}/dashboard`),
+        getData(`orders/hotel/${hotelIdAdmin}/tables/status`)
       ]);
 
       setHotelData(hotel);
       setKpi(report);
-
-      // if API gives tables → use them
-      // else create default 5 tables
-      let resolvedTables: any[] = [];
-      if (dashboardData.tables && dashboardData.tables.length > 0) {
-        resolvedTables = dashboardData.tables;
-      } else {
-        const count = hotel?.table_count ?? 5;
-        resolvedTables = Array.from({ length: count }, (_, i) => ({
-          table_id: i + 1,
-          name: `T${i + 1}`,
-        }));
-      }
-      setTables(resolvedTables);
+      setTableStatuses(statuses || []);
 
       setOrders(dashboardData.orders || []);
     } catch (error) {
@@ -376,28 +364,11 @@ export default function DashboardPage() {
     return () => clearInterval(intervalId);
   }, [hotelIdAdmin, fetchDashboardData]);
 
-  // Helper to get table order status from live orders
-  function getLiveTableStatus(tableId: string | number) {
-    const tableOrders = orders.filter(
-      (o) =>
-        o.table_id === tableId &&
-        (o.status === "PENDING" || o.status === "PREPARING")
-    );
-
-    if (tableOrders.some((o) => o.status === "PENDING")) {
-      return "Needs Attention";
-    }
-    if (tableOrders.some((o) => o.status === "PREPARING")) {
-      return "Occupied";
-    }
-    return "Available";
-  }
-
-  const tableStatuses = tables.map((table) => ({
-    id: table.table_id,
-    name: table.name,
-    status: getLiveTableStatus(table.table_id),
-  }));
+  const statusDisplayMap: { [key: string]: string } = {
+    FREE: 'Available',
+    OCCUPIED: 'Occupied',
+    NEEDS_ATTENTION: 'Needs Attention',
+  };
 
   const kpiData = [
     {
@@ -446,29 +417,39 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {tableStatuses.map((table) => (
-              <Dialog key={table.id}>
-                <DialogTrigger asChild>
-                  <div
-                    className={cn(
-                      "flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg transition-all shadow-md hover:scale-105",
-                      getTableStatusColor(table.status)
-                    )}
-                  >
-                    <div className="text-lg font-bold">
-                      {table.name || `T${table.id}`}
+            {tableStatuses.map((table) =>
+              table.status === 'FREE' ? (
+                <div
+                  key={table.table_id}
+                  className={cn(
+                    "flex aspect-square flex-col items-center justify-center rounded-lg border bg-white shadow-sm",
+                  )}
+                >
+                  <div className="text-lg font-bold">{table.table_id}</div>
+                  <div className="text-xs">{statusDisplayMap[table.status] || table.status}</div>
+                </div>
+              ) : (
+                <Dialog key={table.table_id}>
+                  <DialogTrigger asChild>
+                    <div
+                      className={cn(
+                        "flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg transition-all shadow-md hover:scale-105",
+                        getTableStatusColor(table.status)
+                      )}
+                    >
+                      <div className="text-lg font-bold">{table.table_id}</div>
+                      <div className="text-xs">{statusDisplayMap[table.status] || table.status}</div>
                     </div>
-                    <div className="text-xs">{table.status}</div>
-                  </div>
-                </DialogTrigger>
-                <TableDetailsDialog
-                  tableNumber={table.id}
-                  orders={orders}
-                  hotelId={hotelIdAdmin as number}
-                  onOrderUpdate={fetchDashboardData}
-                />
-              </Dialog>
-            ))}
+                  </DialogTrigger>
+                  <TableDetailsDialog
+                    tableNumber={table.table_id}
+                    hotelId={hotelIdAdmin as number}
+                    hotelData={hotelData}
+                    onOrderUpdate={fetchDashboardData}
+                  />
+                </Dialog>
+              )
+            )}
           </div>
         </CardContent>
       </Card>
@@ -520,4 +501,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

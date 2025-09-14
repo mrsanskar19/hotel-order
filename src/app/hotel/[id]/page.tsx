@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
@@ -186,6 +186,14 @@ export default function Home({ params }: HotelPageProps) {
     }
     fetchHotelData();
   }, [id, toast]);
+
+  useEffect(() => {
+    if (id && tableIdentifier) {
+      getData(`orders/hotel/${id}/table/${tableIdentifier}/occupy`).catch((err) =>
+        console.error("Failed to mark table as occupied:", err)
+      );
+    }
+  }, [id, tableIdentifier]);
 
   if (loading) {
     return (
