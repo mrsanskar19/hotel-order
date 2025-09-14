@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useOrders } from '@/hooks/use-orders';
 import { BottomNav } from '@/components/bottom-nav';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -30,7 +29,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import type { Order } from '@/lib/types';
 import { Hotel } from '@/types';
-import { getData } from "@/lib/api";
+import { getData, postData, patchData } from "@/lib/api"; // Import patchData
 import { useParams, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +42,32 @@ type UserInfo = {
 }
 
 type PaymentStatus = 'idle' | 'verifying' | 'success' | 'failed';
+
+// --- API Functions ---
+async function createOrder(orderData: any) {
+  return await postData('orders', orderData);
+}
+
+async function createDraftOrder(draftData: any) {
+  return await postData('orders/draft', draftData);
+}
+
+async function updateOrderStatus(orderId: string, status: string) {
+  return await patchData(`orders/${orderId}/status`, { status });
+}
+
+async function addOrderItem(orderId: string, itemData: any) {
+  return await postData(`orders/${orderId}/item`, itemData);
+}
+
+async function addOrderItemsBulk(orderId: string, itemsData: any) {
+  return await postData(`orders/${orderId}/items/bulk`, itemsData);
+}
+
+async function reorder(orderId: string) {
+  return await postData(`orders/${orderId}/reorder`, {});
+}
+// ---------------------
 
 export default function OrdersPage() {
   const { orders, closeOrder } = useOrders();
@@ -90,13 +115,8 @@ export default function OrdersPage() {
       interval = setInterval(() => {
         setPaymentTimer(prev => {
           if (prev <= 1) {
-            // Auto-detect payment success after timer
             setPaymentStatus('success');
-            toast({
-              title: 'Payment Detected!',
-              description: 'Your payment has been automatically verified.',
-              variant: 'success'
-            });
+            toast({ title: 'Payment Detected!', description: 'Your payment has been automatically verified.', variant: 'success' });
             return 0;
           }
           return prev - 1;
@@ -112,11 +132,7 @@ export default function OrdersPage() {
       setHotel(hotel);
     } catch (error) {
       console.error('Error fetching hotel:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load hotel information',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: 'Failed to load hotel information', variant: 'destructive' });
     }
   }
 
@@ -141,51 +157,44 @@ export default function OrdersPage() {
 
   const handlePayment = () => {
     if (!orderToClose) return;
-
     setPaymentStatus('verifying');
     setCurrentStep('verification');
-    setPaymentTimer(30); // 30 second timer for auto-detection
-
-    // Simulate real payment verification
+    setPaymentTimer(30);
     if (selectedPaymentMethod === 'cash') {
-      // For cash payments, simulate quicker verification
       setTimeout(() => {
         setPaymentStatus('success');
-        toast({
-          title: 'Cash Payment Confirmed!',
-          description: 'Please pay at the counter.',
-          variant: 'success'
-        });
+        toast({ title: 'Cash Payment Confirmed!', description: 'Please pay at the counter.', variant: 'success' });
       }, 2000);
     }
-    // For UPI, let the timer handle auto-detection
   };
 
-  const handleCloseOrder = () => {
+  const handleCloseOrder = async () => {
     if (!orderToClose) return;
-    
-    setPaymentDialogOpen(false);
+
     setSliderStates(prev => ({ ...prev, [orderToClose.id]: { isLoading: true, isSuccess: false } }));
-    
-    setTimeout(() => {
+
+    try {
+      await updateOrderStatus(orderToClose.id, 'PAID');
+      
       setSliderStates(prev => ({ ...prev, [orderToClose.id]: { isLoading: false, isSuccess: true } }));
       toast({ 
         title: 'Order Completed!', 
-        description: 'Your order has been successfully closed.', 
+        description: 'Order status updated to PAID.', 
         duration: 5000, 
         variant: 'success' 
       });
-      
+
       setTimeout(() => {
         closeOrder(orderToClose.id);
-        setSliderStates(prev => {
-          const newStates = { ...prev };
-          delete newStates[orderToClose.id];
-          return newStates;
-        });
+        setPaymentDialogOpen(false);
         setOrderToClose(null);
       }, 1500);
-    }, 1000);
+
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+      toast({ variant: "destructive", title: "Error", description: "Failed to close order." });
+      setSliderStates(prev => ({ ...prev, [orderToClose.id]: { isLoading: false, isSuccess: false } }));
+    }
   };
 
   const activeOrder = isClient ? orders.find(o => o.status === 'Active') : undefined;
@@ -194,8 +203,7 @@ export default function OrdersPage() {
   const upiUrl = useMemo(() => {
     if (!activeOrder) return '';
     const amount = activeOrder.total.toFixed(2);
-    const upiLink = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${amount}&cu=INR&tn=Order%20${activeOrder.id.substring(0, 6)}`;
-    return upiLink;
+    return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${amount}&cu=INR&tn=Order%20${activeOrder.id.substring(0, 6)}`;
   }, [activeOrder]);
 
   const qrCodeUrl = useMemo(() => {
@@ -206,23 +214,17 @@ export default function OrdersPage() {
   const generatePdfReceipt = (order: Order, userInfo: UserInfo) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    
-    // Header
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(24);
     doc.text('Foodie Go', pageWidth / 2, 20, { align: 'center' });
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text('Your delicious meal, delivered.', pageWidth / 2, 28, { align: 'center' });
-    
     doc.setDrawColor(200);
     doc.line(15, 35, pageWidth - 15, 35);
-    
-    // Order Details
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('Order Receipt', 15, 45);
-    
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.text(`Order ID: ${order.id.substring(0, 8)}`, 15, 52);
@@ -230,8 +232,6 @@ export default function OrdersPage() {
     if (userInfo.name) doc.text(`Customer Name: ${userInfo.name}`, 15, 62);
     if (userInfo.phone) doc.text(`Customer Phone: ${userInfo.phone}`, 15, 67);
     if (tableIdentifier) doc.text(`Table: ${tableIdentifier}`, 15, 72);
-
-    // Items Table
     (doc as any).autoTable({
       startY: 80,
       head: [['Item', 'Notes', 'Qty', 'Price', 'Total']],
@@ -247,79 +247,100 @@ export default function OrdersPage() {
       styles: { font: 'helvetica', fontSize: 10 },
       margin: { left: 15, right: 15 }
     });
-    
-    // Total
     const finalY = (doc as any).lastAutoTable.finalY;
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text(`Total: ₹${order.total.toFixed(2)}`, pageWidth - 15, finalY + 15, { align: 'right' });
-    
-    // Footer
     doc.line(15, finalY + 25, pageWidth - 15, finalY + 25);
     doc.setFontSize(10);
     doc.text('Thank you for your order!', pageWidth / 2, finalY + 32, { align: 'center' });
-    
     doc.save(`Foodie-Go-Receipt-${order.id.substring(0, 6)}.pdf`);
   };
 
   const renderBillContent = () => {
     if (!orderToClose) return null;
+    
+    const subtotal = orderToClose.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const tax = subtotal * 0.085; // 8.5% tax
+    const serviceCharge = subtotal * 0.15; // 15% service charge
+    const total = subtotal + tax + serviceCharge;
 
     return (
-      <div className="space-y-4 py-4">
-        <div className="bg-muted/30 p-4 rounded-lg">
-          <h3 className="font-semibold text-lg mb-4">Order Summary</h3>
-          <div className="space-y-3">
+      <div className="space-y-4 py-4 font-sans">
+        <div className="border rounded-lg p-4 bg-background">
+          <h3 className="font-bold text-xl mb-4 text-center font-serif">Invoice</h3>
+          
+          {hotel && (
+            <div className='text-center mb-4'>
+              <p className="font-bold text-lg">{hotel.name}</p>
+              <p className="text-xs text-muted-foreground">{hotel.address}</p>
+            </div>
+          )}
+          
+          <div className="text-xs text-muted-foreground mb-4">
+            <div className="flex justify-between">
+              <span>Order ID:</span>
+              <span>{orderToClose.id.substring(0, 8)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Date:</span>
+              <span>{format(new Date(orderToClose.date), "PPpp")}</span>
+            </div>
+            {tableIdentifier && (
+              <div className="flex justify-between">
+                <span>Table:</span>
+                <span>{tableIdentifier}</span>
+              </div>
+            )}
+            {userInfo.name && (
+              <div className="flex justify-between">
+                <span>Customer:</span>
+                <span>{userInfo.name}</span>
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          <div className="my-4 space-y-2 text-sm">
             {orderToClose.items.map(item => (
-              <div key={item.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Image 
-                    src={imageUrl(item)} 
-                    alt={item.name} 
-                    width={40} 
-                    height={40} 
-                    className="rounded object-cover" 
-                  />
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                    {item.notes && (
-                      <p className="text-xs text-muted-foreground italic">Note: {item.notes}</p>
-                    )}
-                  </div>
+              <div key={item.id} className="flex">
+                <div className="flex-grow">
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-xs text-muted-foreground">{item.quantity} x ₹{item.price.toFixed(2)}</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold">₹{(item.price * item.quantity).toFixed(2)}</p>
-                  <p className="text-sm text-muted-foreground">₹{item.price} each</p>
-                </div>
+                <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
               </div>
             ))}
           </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-2">
+
+          <Separator />
+
+          <div className="my-4 space-y-1 text-sm">
             <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>₹{orderToClose.total.toFixed(2)}</span>
+              <span className="text-muted-foreground">Subtotal</span>
+              <span>₹{subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>₹{orderToClose.total.toFixed(2)}</span>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Taxes (8.5%)</span>
+              <span>₹{tax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Service Charge (15%)</span>
+              <span>₹{serviceCharge.toFixed(2)}</span>
             </div>
           </div>
 
-          {userInfo.name && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-sm"><strong>Customer:</strong> {userInfo.name}</p>
-              {userInfo.phone && <p className="text-sm"><strong>Phone:</strong> {userInfo.phone}</p>}
-              {tableIdentifier && <p className="text-sm"><strong>Table:</strong> {tableIdentifier}</p>}
-            </div>
-          )}
+          <Separator />
+
+          <div className="flex justify-between font-bold text-lg mt-4">
+            <span>Total</span>
+            <span>₹{total.toFixed(2)}</span>
+          </div>
         </div>
       </div>
     );
-  };
+};
 
   const renderUserInfoContent = () => (
     <div className='space-y-4 py-4'>
@@ -364,13 +385,6 @@ export default function OrdersPage() {
                 <p className="text-xs text-muted-foreground mt-1">UPI ID: {UPI_ID}</p>
               </div>
             </div>
-            
-            <Button asChild variant="outline" className="w-full">
-              <Link href={`upi://pay?pa=${UPI_ID}&am=${activeOrder?.total.toFixed(2)}&cu=INR&tn=Order${activeOrder.id.substring(0, 6)}`}>
-                <QrCode className="mr-2 h-4 w-4"/>
-                Open UPI App
-              </Link>
-            </Button>
           </div>
         );
       case 'cash':
@@ -696,7 +710,6 @@ export default function OrdersPage() {
                 </Button>
               </>
             ) : (
-              // Verification step - no footer buttons needed
               <div className="w-full" />
             )}
           </AlertDialogFooter>
