@@ -5,26 +5,13 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import { orders } from '@/lib/data';
 import type { Order } from '@/types';
-import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import type { Order } from '@/types';
-import { getData, postData, putData } from '@/lib/api';
+import { getData } from '@/lib/api';
 import { useAppData } from '@/hooks/useAppData';
 
 function getStatusBadgeVariant(
@@ -45,38 +32,31 @@ function getStatusBadgeVariant(
 }
 
 export default function OrdersPage() {
-  const [orderData, setOrderData] = React.useState<Order[]>(orders);
+  const [orderData, setOrderData] = React.useState<Order[]>([]);
+  const { hotelIdAdmin } = useAppData();
 
-  const handleStatusUpdate = (orderId: string, value: number[]) => {
-    if (value[0] === 100) {
-      setOrderData(prevOrders =>
-        prevOrders.map(order =>
-          order.id === orderId ? { ...order, status: 'Completed' } : order
-        )
-      );
+  React.useEffect(() => {
+    if (hotelIdAdmin) {
+      getData(`orders/hotel/${hotelIdAdmin}`).then(response => {
+        setOrderData(response.data);
+      });
     }
-  };
-  
-  const orderStatuses: Order['status'][] = ['Pending', 'Preparing', 'Completed', 'Cancelled'];
+  }, [hotelIdAdmin]);
 
-  const ordersByStatus = (status: Order['status']) =>
-    orderData.filter((o) => o.status === status);
+  const completedOrders = orderData.filter((o) => o.status === 'DELIVERED');
 
   return (
     <div className="flex flex-col gap-4">
-      <Tabs defaultValue="PENDING">
-        <TabsList className="grid w-full grid-cols-4">
-          {orderStatuses.map((status) => (
-            <TabsTrigger key={status} value={status}>
-              {status}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {orderStatuses.map(status => (
-            <TabsContent key={status} value={status}>
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Completed Orders</CardTitle>
+                <CardDescription>
+                An overview of all completed orders.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
-                    {ordersByStatus(status).length > 0 ? ordersByStatus(status).map(order => (
+                    {completedOrders.length > 0 ? completedOrders.map(order => (
                         <Card key={order.id} className="flex flex-col">
                             <CardHeader>
                                 <CardTitle className="flex items-center justify-between font-headline">
@@ -98,25 +78,13 @@ export default function OrdersPage() {
                                     <span>${order.total.toFixed(2)}</span>
                                 </div>
                             </CardContent>
-                            {order.status === 'Preparing' && (
-                                <CardFooter className="flex-col items-start gap-2 pt-4">
-                                  <Label className="text-xs text-muted-foreground">Slide to mark as completed</Label>
-                                  <Slider
-                                    defaultValue={[0]}
-                                    max={100}
-                                    step={1}
-                                    onValueChange={(value) => handleStatusUpdate(order.id, value)}
-                                  />
-                                </CardFooter>
-                            )}
                         </Card>
                     )) : (
-                        <p className="text-muted-foreground col-span-full text-center mt-8">No {status.toLowerCase()} orders.</p>
+                        <p className="text-muted-foreground col-span-full text-center mt-8">No completed orders.</p>
                     )}
                 </div>
-            </TabsContent>
-        ))}
-      </Tabs>
+            </CardContent>
+        </Card>
     </div>
   );
 }

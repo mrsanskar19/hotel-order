@@ -103,7 +103,8 @@ export function useAppData(): AppDataHook {
       if (!hotelId) throw new Error("No hotelId set");
       
       try {
-        const order = await postData(`hotel/${hotelId}/orders`, {
+        const order = await postData('orders/draft', {
+          hotel_id: hotelId,
           table_id: tableId,
           items,
           total_amount,

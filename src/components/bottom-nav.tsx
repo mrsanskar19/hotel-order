@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -8,6 +7,7 @@ import { useOrders } from '@/hooks/use-orders';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { useAppData } from '@/hooks/useAppData';
 
 
 interface BottomNavProps {
@@ -19,21 +19,25 @@ export function BottomNav({ onOpenCart }: BottomNavProps) {
   const { orders } = useOrders();
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
+  const { hotelId } = useAppData();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const activeOrdersCount = isClient ? orders.filter(o => o.status === 'Active').length : 0;
+  
+  const menuLink = `/hotel/${hotelId}`;
+  const ordersLink =  `/hotel/${hotelId}/orders`;
 
 
   return (
     <div className="fixed bottom-0 left-0 right-0 h-20 bg-background border-t z-50 md:hidden">
       <div className="container h-full">
         <div className="grid grid-cols-3 items-center h-full text-center">
-            <Link href="./" className={cn(
+            <Link href={menuLink} className={cn(
               'flex flex-col items-center gap-1 h-full justify-center',
-              pathname === '/' ? 'text-primary' : 'text-muted-foreground'
+              pathname === menuLink ? 'text-primary' : 'text-muted-foreground'
             )}>
               <Home className="w-6 h-6" />
               <span className="text-xs font-medium">Menu</span>
@@ -55,9 +59,9 @@ export function BottomNav({ onOpenCart }: BottomNavProps) {
                 </button>
             </div>
             
-            <Link href={`./orders`} className={cn(
+            <Link href={ordersLink} className={cn(
               'flex flex-col items-center gap-1 relative h-full justify-center',
-              pathname === '/orders' ? 'text-primary' : 'text-muted-foreground'
+              pathname === ordersLink ? 'text-primary' : 'text-muted-foreground'
             )}>
               <ListOrdered className="w-6 h-6" />
               <span className="text-xs font-medium">Orders</span>

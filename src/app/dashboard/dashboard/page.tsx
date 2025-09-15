@@ -346,6 +346,8 @@ export default function DashboardPage() {
     { title: "Orders Today", value: `${kpi?.totalOrders ?? 0}`, icon: Utensils },
   ];
 
+  const activeOrders = orders.filter(o => o.status === 'PENDING' || o.status === 'PREPARING');
+
   return (
     <div className="grid gap-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -393,6 +395,45 @@ export default function DashboardPage() {
               )
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="font-headline">Active Orders</CardTitle>
+          <CardDescription>Orders that are currently pending or in preparation.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Table</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Items</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {activeOrders.length > 0 ? activeOrders.map((order: Order) => (
+                <TableRow key={order.order_id}>
+                  <TableCell className="font-medium">{String(order.order_id).slice(-6)}</TableCell>
+                  <TableCell>{order.table_id}</TableCell>
+                  <TableCell>₹{order.total_amount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
+                  </TableCell>
+                  <TableCell>{order.items.reduce((acc, item) => acc + item.quantity, 0)}</TableCell>
+                </TableRow>
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                    No active orders found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 

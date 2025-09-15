@@ -48,16 +48,16 @@ const navItems = [
 
 const MobileBottomNav = () => {
   const pathname = usePathname();
-  const visibleNavItems = navItems; // Show all items on mobile nav
+  const visibleNavItems = navItems.filter(item => item.label !== 'Reviews' && item.label !== 'QR Code');
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-sm md:hidden">
-      <div className="flex h-16 items-center justify-start overflow-x-auto px-2">
+      <div className="flex h-16 items-center justify-around px-2">
         {visibleNavItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              'flex flex-col items-center justify-center gap-1 p-2 text-muted-foreground transition-colors hover:text-primary flex-shrink-0 w-20',
+              'flex flex-1 flex-col items-center justify-center gap-1 p-2 text-muted-foreground transition-colors hover:text-primary',
               pathname === item.href && 'text-primary'
             )}
           >
@@ -172,4 +172,3 @@ export default function RootLayout({
       </main>
   );
 }
-''
