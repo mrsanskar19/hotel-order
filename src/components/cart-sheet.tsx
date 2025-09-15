@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCart, type CartItem } from '@/hooks/use-cart';
-import { useOrders } from '@/hooks/use-orders';
+import { useAppData } from '@/hooks/useAppData';
 import { SlideToConfirm } from '@/components/slide-to-confirm';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -22,29 +22,43 @@ interface CartSheetProps {
 
 export function CartSheet({ isOpen, onOpenChange, onOrderPlaced, tableId }: CartSheetProps) {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
-  const { addOrder } = useOrders();
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const isMobile = useIsMobile();
+  const { createOrder } = useAppData();
 
-  const handlePlaceOrder = () => {
-    setIsLoading(true);
+  const handlePlaceOrder = async () => {
+  setIsLoading(true);
 
-    // Simulate API call
+  try {
+    await createOrder(
+      cartItems.map((item) => ({
+        item_id: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      totalPrice,
+      'CASH',
+      tableId?.toString()
+    );
+
+    setIsSuccess(true);
+
     setTimeout(() => {
-        addOrder(cartItems, totalPrice, tableId);
-        setIsLoading(false);
-        setIsSuccess(true);
-        
-        setTimeout(() => {
-            onOpenChange(false);
-            onOrderPlaced();
-            clearCart();
-            // Reset success state after the sheet is closed
-            setTimeout(() => setIsSuccess(false), 500);
-        }, 1500);
-    }, 2000);
-  };
+      onOpenChange(false);
+      onOrderPlaced();
+      clearCart();
+      setTimeout(() => setIsSuccess(false), 500);
+    }, 1500);
+  } catch (error) {
+    console.error("Order creation failed:", error);
+    alert("Failed to place order. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   
   const side = isMobile ? 'bottom' : 'right';
 
@@ -120,13 +134,13 @@ export function CartSheet({ isOpen, onOpenChange, onOrderPlaced, tableId }: Cart
 }
 
 function CartItemRow({ item, updateQuantity, removeFromCart }: { item: CartItem, updateQuantity: (id: number, q: number) => void, removeFromCart: (id: number) => void }) {
-  const imageUrl = (item.images && item.images.length > 0) ? item.images[0] : 'https://placehold.co/64x64.png';
+  const imageUrl = item.img ? item.img : 'https://placehold.co/64x64.png';
   return (
     <div className="flex items-center gap-4 py-4">
       <Image src={imageUrl} alt={item.name} width={64} height={64} className="rounded-md object-cover" data-ai-hint="food meal"/>
       <div className="flex-1">
         <p className="font-semibold">{item.name}</p>
-        <p className="text-sm text-muted-foreground">₹{item.price.toFixed(2)}</p>
+        <p className="text-sm text-muted-foreground">₹{item.price}</p>
       </div>
       <div className="flex items-center gap-2">
         <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>

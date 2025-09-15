@@ -32,6 +32,7 @@ import { Hotel } from '@/types';
 import { getData, postData, patchData } from "@/lib/api"; // Import patchData
 import { useParams, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAppData } from '@/hooks/useAppData'
 
 const UPI_ID = '8351921719@axl';
 const PAYEE_NAME = "Pizza Master's";
@@ -43,34 +44,9 @@ type UserInfo = {
 
 type PaymentStatus = 'idle' | 'verifying' | 'success' | 'failed';
 
-// --- API Functions ---
-async function createOrder(orderData: any) {
-  return await postData('orders', orderData);
-}
 
-async function createDraftOrder(draftData: any) {
-  return await postData('orders/draft', draftData);
-}
-
-async function updateOrderStatus(orderId: string, status: string) {
-  return await patchData(`orders/${orderId}/status`, { status });
-}
-
-async function addOrderItem(orderId: string, itemData: any) {
-  return await postData(`orders/${orderId}/item`, itemData);
-}
-
-async function addOrderItemsBulk(orderId: string, itemsData: any) {
-  return await postData(`orders/${orderId}/items/bulk`, itemsData);
-}
-
-async function reorder(orderId: string) {
-  return await postData(`orders/${orderId}/reorder`, {});
-}
-// ---------------------
 
 export default function OrdersPage() {
-  const { orders, closeOrder } = useOrders();
   const { id } = useParams();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,8 +64,17 @@ export default function OrdersPage() {
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [tableIdentifier, setTableIdentifier] = useState<string | null>(null);
 
+  const [orders, setOrders] = useState<Order[]>([]);
+
   useEffect(() => {
     setIsClient(true);
+    const savedActiveOrders = localStorage.getItem("active_orders");
+    if (savedActiveOrders) {
+  const parsedOrders = JSON.parse(savedActiveOrders);
+  console.log("parsed orders:", parsedOrders);
+  setOrders(parsedOrders);
+}
+
   }, []);
 
   useEffect(() => {
@@ -197,13 +182,13 @@ export default function OrdersPage() {
     }
   };
 
-  const activeOrder = isClient ? orders.find(o => o.status === 'Active') : undefined;
+  const activeOrder = orders[0];
   const imageUrl = (item: any) => (item.img) ? item.img : 'https://placehold.co/48x48.png';
 
   const upiUrl = useMemo(() => {
     if (!activeOrder) return '';
-    const amount = activeOrder.total.toFixed(2);
-    return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${amount}&cu=INR&tn=Order%20${activeOrder.id.substring(0, 6)}`;
+    const amount = activeOrder.total;
+    return `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${amount}&cu=INR&tn=Order%20${activeOrder?.order_id}`;
   }, [activeOrder]);
 
   const qrCodeUrl = useMemo(() => {
@@ -280,7 +265,7 @@ export default function OrdersPage() {
           <div className="text-xs text-muted-foreground mb-4">
             <div className="flex justify-between">
               <span>Order ID:</span>
-              <span>{orderToClose.id.substring(0, 8)}</span>
+              <span>{orderToClose.order_id}</span>
             </div>
             <div className="flex justify-between">
               <span>Date:</span>
@@ -481,13 +466,13 @@ export default function OrdersPage() {
     }
     
     if (activeOrder) {
-      const orderId = activeOrder.id;
+      const orderId = activeOrder.order_id;
       return (
         <Card key={orderId} className="overflow-hidden">
           <CardHeader className="flex-row justify-between items-center bg-muted/50 p-4">
             <div>
-              <CardTitle className="text-lg font-headline">Order #{orderId.substring(0, 6)}</CardTitle>
-              <p className="text-sm text-muted-foreground">{format(new Date(activeOrder.date), "PPP p")}</p>
+              <CardTitle className="text-lg font-headline">Order #{orderId}</CardTitle>
+              
               {tableIdentifier && (
                 <Badge variant="outline" className="mt-1">Table {tableIdentifier}</Badge>
               )}
@@ -501,7 +486,7 @@ export default function OrdersPage() {
               {activeOrder.items.map(item => (
                 <div key={item.id} className="flex items-center gap-4">
                   <Image 
-                    src={imageUrl(item)} 
+                    src={item?.img} 
                     alt={item.name} 
                     width={48} 
                     height={48} 
@@ -515,7 +500,7 @@ export default function OrdersPage() {
                       <p className="text-xs text-muted-foreground italic">Note: {item.notes}</p>
                     )}
                   </div>
-                  <p className="font-semibold">₹{(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-semibold">₹{(item.price * item.quantity)}</p>
                 </div>
               ))}
             </div>
@@ -523,7 +508,7 @@ export default function OrdersPage() {
           <CardFooter className="flex-col items-stretch gap-4 bg-muted/50 p-4">
             <div className="flex justify-between items-center font-bold text-lg">
               <span>Total</span>
-              <span>₹{activeOrder.total.toFixed(2)}</span>
+              <span>₹{activeOrder.total}</span>
             </div>
             <div className="md:hidden">
               <SlideToConfirm 
