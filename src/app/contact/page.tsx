@@ -156,7 +156,6 @@ export default function ContactPage() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="+91 98765 43210"
                       disabled={isLoading}
                       value={formData.phone}
                       onChange={handleInputChange}
