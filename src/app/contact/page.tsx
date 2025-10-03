@@ -1,8 +1,7 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +15,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     subject: '',
     message: '',
   });
@@ -31,13 +31,14 @@ export default function ContactPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // IMPORTANT: Replace with your actual Web3Forms access key
-    const access_key = "YOUR_ACCESS_KEY_HERE"; 
+    // ✅ Web3Forms access key
+    const access_key = "f52d9000-6612-44a9-931f-77804b8f4d30"; 
 
     const data = new FormData();
     data.append('access_key', access_key);
     data.append('name', formData.name);
     data.append('email', formData.email);
+    data.append('phone', formData.phone);
     data.append('subject', formData.subject);
     data.append('message', formData.message);
     data.append('redirect', 'https://web3forms.com/success');
@@ -57,11 +58,12 @@ export default function ContactPage() {
         });
         (e.target as HTMLFormElement).reset();
         setFormData({
-            name: '',
-            email: '',
-            subject: '',
-            message: '',
-        })
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+        });
       } else {
         toast({
           title: 'Error!',
@@ -89,6 +91,7 @@ export default function ContactPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Contact Form */}
           <div>
             <h2 className="text-3xl font-bold font-headline mb-6">Get in Touch</h2>
             <Card>
@@ -104,6 +107,13 @@ export default function ContactPage() {
                       <Input id="email" type="email" required disabled={isLoading} value={formData.email} onChange={handleInputChange}/>
                     </div>
                   </div>
+
+                  {/* ✅ Phone Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input id="phone" type="tel" required disabled={isLoading} value={formData.phone} onChange={handleInputChange}/>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
                     <Input id="subject" required disabled={isLoading} value={formData.subject} onChange={handleInputChange}/>
@@ -120,6 +130,7 @@ export default function ContactPage() {
             </Card>
           </div>
           
+          {/* Contact Information */}
           <div>
             <h2 className="text-3xl font-bold font-headline mb-6">Our Information</h2>
             <div className="space-y-6">
@@ -132,7 +143,7 @@ export default function ContactPage() {
                   </div>
                 </CardHeader>
               </Card>
-               <Card>
+              <Card>
                 <CardHeader className="flex flex-row items-center gap-4">
                   <Phone className="h-8 w-8 text-primary" />
                   <div>
@@ -141,7 +152,7 @@ export default function ContactPage() {
                   </div>
                 </CardHeader>
               </Card>
-               <Card>
+              <Card>
                 <CardHeader className="flex flex-row items-center gap-4">
                   <MapPin className="h-8 w-8 text-primary" />
                   <div>
