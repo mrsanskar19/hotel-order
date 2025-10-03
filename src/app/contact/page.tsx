@@ -20,19 +20,47 @@ export default function ContactPage() {
     message: '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
   };
 
+  // ✅ Validate form fields before sending
+  const validateForm = () => {
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill all required fields.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    // basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
+
     setIsLoading(true);
 
     // ✅ Web3Forms access key
-    const access_key = "f52d9000-6612-44a9-931f-77804b8f4d30"; 
+    const access_key = "f52d9000-6612-44a9-931f-77804b8f4d30";
 
     const data = new FormData();
     data.append('access_key', access_key);
@@ -41,7 +69,6 @@ export default function ContactPage() {
     data.append('phone', formData.phone);
     data.append('subject', formData.subject);
     data.append('message', formData.message);
-    data.append('redirect', 'https://web3forms.com/success');
 
     try {
       const response = await fetch('https://api.web3forms.com/submit', {
@@ -56,7 +83,8 @@ export default function ContactPage() {
           title: 'Message Sent!',
           description: 'Thank you for contacting us. We will get back to you shortly.',
         });
-        (e.target as HTMLFormElement).reset();
+
+        // Reset form
         setFormData({
           name: '',
           email: '',
@@ -67,15 +95,15 @@ export default function ContactPage() {
       } else {
         toast({
           title: 'Error!',
-          description: 'There was an error sending your message. Please try again.',
-          variant: 'destructive'
+          description: result.message || 'There was an error sending your message.',
+          variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Error!',
-        description: 'There was an error sending your message. Please try again.',
-        variant: 'destructive'
+        title: 'Network Error!',
+        description: 'Please check your internet connection and try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -87,7 +115,9 @@ export default function ContactPage() {
       <div className="container">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold font-headline">Contact Us</h1>
-          <p className="mt-4 text-lg text-muted-foreground">We'd love to hear from you. Get in touch with us.</p>
+          <p className="mt-4 text-lg text-muted-foreground">
+            We'd love to hear from you. Get in touch with us.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -100,28 +130,62 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" required disabled={isLoading} value={formData.name} onChange={handleInputChange} />
+                      <Input
+                        id="name"
+                        required
+                        disabled={isLoading}
+                        value={formData.name}
+                        onChange={handleInputChange}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" required disabled={isLoading} value={formData.email} onChange={handleInputChange}/>
+                      <Input
+                        id="email"
+                        type="email"
+                        required
+                        disabled={isLoading}
+                        value={formData.email}
+                        onChange={handleInputChange}
+                      />
                     </div>
                   </div>
 
-                  {/* ✅ Phone Field */}
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" required disabled={isLoading} value={formData.phone} onChange={handleInputChange}/>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      disabled={isLoading}
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" required disabled={isLoading} value={formData.subject} onChange={handleInputChange}/>
+                    <Input
+                      id="subject"
+                      required
+                      disabled={isLoading}
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                    />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
-                    <Textarea id="message" required rows={6} disabled={isLoading} value={formData.message} onChange={handleInputChange}/>
+                    <Textarea
+                      id="message"
+                      required
+                      rows={6}
+                      disabled={isLoading}
+                      value={formData.message}
+                      onChange={handleInputChange}
+                    />
                   </div>
+
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? 'Sending...' : 'Send Message'}
                   </Button>
@@ -129,7 +193,7 @@ export default function ContactPage() {
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Contact Information */}
           <div>
             <h2 className="text-3xl font-bold font-headline mb-6">Our Information</h2>
@@ -157,7 +221,9 @@ export default function ContactPage() {
                   <MapPin className="h-8 w-8 text-primary" />
                   <div>
                     <CardTitle className="text-xl">Office</CardTitle>
-                    <p className="text-muted-foreground">Shanti Nagar Bhiwandi,421302</p>
+                    <p className="text-muted-foreground">
+                      Shanti Nagar Bhiwandi, 421302
+                    </p>
                   </div>
                 </CardHeader>
               </Card>
