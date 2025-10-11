@@ -25,6 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Partners } from '@/components/partners';
 
 const foodIcons = [
   { icon: Utensils, size: 'w-12 h-12' },
@@ -84,7 +85,7 @@ export default function Home() {
                   size="lg"
                   className="px-8 w-full sm:w-auto transition-transform duration-300 hover:scale-105 bg-primary"
                 >
-                  Book Demo
+                  Book our Smart Solution
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -100,6 +101,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+        {/* <Partners /> */}
 
         {/* Features */}
         <section
@@ -247,7 +249,7 @@ export default function Home() {
                 variant="outline"
                 className="w-full bg-red sm:w-auto text-white border-white hover:bg-white hover:text-red-600"
               >
-                Book Demo
+                Book our Smart Solution
               </Button>
             </Link>
           </div>
@@ -258,7 +260,6 @@ export default function Home() {
   );
 }
 
-/* ------------------- Reusable Components ------------------- */
 
 function Feature({
   icon,

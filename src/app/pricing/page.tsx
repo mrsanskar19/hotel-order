@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { ShoppingBag, TrendingUp, Zap } from 'lucide-react'; // Using lucide-react for professional icons
 
 export default function PricingPage() {
   const [visibleSections, setVisibleSections] = useState<string[]>([]);
 
+  // Intersection Observer for scroll animation
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -22,21 +24,45 @@ export default function PricingPage() {
     return () => observer.disconnect();
   }, []);
 
+  // Helper component for plan feature list
+  const FeatureItem: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <li className="flex items-start space-x-3">
+      {/* Red checkmark for the feature list */}
+      <svg className="flex-shrink-0 w-5 h-5 text-red-600 mt-1" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+      </svg>
+      <span className="text-gray-700">{children}</span>
+    </li>
+  );
+
+  // Helper for the Rupee symbol
+  const RupeeSymbol = () => (
+    <span className="text-3xl font-normal text-gray-400 mr-1 mt-1 font-serif">
+      ₹
+    </span>
+  );
+
   return (
-    <main className="min-h-screen w-full bg-white text-gray-900">
-      {/* Hero Section */}
-      <section className="relative flex flex-col items-center justify-center h-[70vh] text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-100 via-white to-red-50" />
-        <h1 className="relative z-10 text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent animate-fadeInDown">
-            Pricing
-        </h1>
-        <p className="relative z-10 mt-6 text-lg md:text-xl text-gray-600 max-w-2xl">
-          Choose the right plan for your hotel. Transparent, flexible, and designed to
-          simplify order management.
-        </p>
+    <main className="min-h-screen w-full bg-gray-50 text-gray-900 font-sans">
+      {/* Hero Section - Bold Red Accent */}
+      <section className="relative flex flex-col items-center justify-center h-[60vh] text-center overflow-hidden bg-white shadow-sm border-b border-red-100">
+        <div className="py-20 px-6">
+            <p className="text-sm font-semibold uppercase tracking-wider text-red-600 mb-3">
+                Solutions for Every Scale
+            </p>
+            <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900">
+                Transparent Pricing
+            </h1>
+            <p className="mt-6 text-xl text-gray-500 max-w-3xl mx-auto">
+              Choose the plan that best aligns with your business goals. Scalable features
+              designed to optimize operational efficiency and guest satisfaction.
+            </p>
+        </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* --- */}
+
+      {/* Pricing Section - Structured and Professional Red Theme */}
       <section
         id="plans"
         className={cn(
@@ -44,81 +70,106 @@ export default function PricingPage() {
           visibleSections.includes('plans') && 'opacity-100 translate-y-0'
         )}
       >
-        <h2 className="text-4xl font-bold text-center mb-16">Our Plans</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* Starter Plan */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-10 shadow-md hover:shadow-xl transition-shadow duration-500 text-center">
-            <h3 className="text-2xl font-semibold mb-4">Starter</h3>
-            <p className="text-gray-500 mb-6">Best for small hotels & cafes.</p>
-            <p className="text-4xl font-bold text-gray-400 mb-4">Coming Soon</p>
-            <ul className="text-gray-600 space-y-2">
-              <li>✔ Basic order management</li>
-              <li>✔ Simple menu listing</li>
-              <li>✔ Basic reporting</li>
+        <h2 className="text-4xl font-bold text-center mb-4 text-gray-800">
+            Our Service Tiers
+        </h2>
+        <p className="text-center text-lg text-gray-500 mb-16">
+            Future-proof your operations with a plan built for growth.
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Basic Plan */}
+          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+            <Zap className="w-8 h-8 text-red-500 mb-4" />
+            <h3 className="text-2xl font-bold mb-2 text-gray-900">Basic</h3>
+            <p className="text-gray-500 mb-6 min-h-12">Ideal for small-scale operations and initial digitalization.</p>
+
+            <div className="flex items-baseline mb-8">
+                <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
+                    <RupeeSymbol />
+                    299.00
+                </p>
+                <p className="text-lg text-gray-500 font-medium">/ month</p>
+            </div>
+
+            <ul className="space-y-4">
+              <FeatureItem>Basic digital order management</FeatureItem>
+              <FeatureItem>Simple, customizable menu portal</FeatureItem>
+              <FeatureItem>Standard performance reports</FeatureItem>
+              <FeatureItem>Email support (24-hour response)</FeatureItem>
             </ul>
           </div>
 
-          {/* Premium / Demo Highlight */}
-          <div className="relative bg-gradient-to-b from-red-50 to-white border-2 border-red-500 rounded-2xl p-10 shadow-lg hover:shadow-xl transition-shadow duration-500 text-center">
-            <span className="absolute top-3 right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
-              Demo Available
+          {/* Premium Plan (Highlighted) */}
+          <div className="relative bg-white border-2 border-red-600 rounded-xl p-10 shadow-2xl scale-100 transition-all duration-500">
+            <span className="absolute top-0 right-0 -mt-3 mr-6 bg-red-600 text-white text-xs px-4 py-1 rounded-full font-semibold uppercase tracking-wider shadow-md">
+              Recommended
             </span>
-            <h3 className="text-2xl font-semibold mb-4">Premium</h3>
-            <p className="text-gray-600 mb-6">Perfect for medium-sized hotels.</p>
-            <p className="text-4xl font-bold text-red-600 mb-4">Free Demo</p>
-            <ul className="text-gray-600 space-y-2 mb-6">
-              <li>✔ Full menu customization</li>
-              <li>✔ Smart cart & live orders</li>
-              <li>✔ Analytics dashboard</li>
-              <li>✔ Priority support</li>
+            <ShoppingBag className="w-8 h-8 text-red-600 mb-4" />
+            <h3 className="text-2xl font-bold mb-2 text-gray-900">Premium</h3>
+            <p className="text-gray-600 mb-6 min-h-12">The perfect blend of features for mid-sized hotels focusing on growth.</p>
+
+            <div className="flex items-baseline mb-8">
+                <p className="text-4xl font-bold text-red-600 mr-2 flex items-baseline">
+                    <RupeeSymbol />
+                    499.00
+                </p>
+                <p className="text-lg text-gray-500 font-medium">/ month</p>
+            </div>
+            
+            <ul className="space-y-4 mb-6">
+              <FeatureItem>Full menu and inventory synchronization</FeatureItem>
+              <FeatureItem>Real-time order tracking and smart alerts</FeatureItem>
+              <FeatureItem>Advanced analytics dashboard</FeatureItem>
+              <FeatureItem>Dedicated account manager & priority support</FeatureItem>
+              <FeatureItem>Guest feedback and rating system</FeatureItem>
             </ul>
-            <a
-              href="#contact"
-              className="mt-8 inline-block relative overflow-hidden border-2 border-red-600 text-red-600 bg-transparent px-8 py-3 rounded-lg font-medium transition-colors duration-300 ease-in-out group"
-            >
-              <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out group-hover:scale-x-100 bg-red-600" />
-              <span className="relative z-10 group-hover:text-white">Book Now</span>
-            </a>
           </div>
 
-          {/* Pro Plan */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-10 shadow-md hover:shadow-xl transition-shadow duration-500 text-center">
-            <h3 className="text-2xl font-semibold mb-4">Pro</h3>
-            <p className="text-gray-500 mb-6">For large hotels & restaurant chains.</p>
-            <p className="text-4xl font-bold text-gray-400 mb-4">Coming Soon</p>
-            <ul className="text-gray-600 space-y-2">
-              <li>✔ Multi-branch management</li>
-              <li>✔ Advanced analytics & reports</li>
-              <li>✔ Custom integrations (POS/CRM)</li>
-              <li>✔ 24/7 dedicated support</li>
+          {/* Enterprise Plan */}
+          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+            <TrendingUp className="w-8 h-8 text-red-500 mb-4" />
+            <h3 className="text-2xl font-bold mb-2 text-gray-900">Enterprise</h3>
+            <p className="text-gray-500 mb-6 min-h-12">Comprehensive solution for large chains and complex operational structures.</p>
+
+            <div className="flex items-baseline mb-8">
+                <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
+                    <RupeeSymbol />
+                    Custom
+                </p>
+            </div>
+            
+            <ul className="space-y-4">
+              <FeatureItem>Multi-location and brand management</FeatureItem>
+              <FeatureItem>Custom API integrations (POS/CRM/PMS)</FeatureItem>
+              <FeatureItem>Predictive analytics and demand forecasting</FeatureItem>
+              <FeatureItem>24/7/365 dedicated technical support</FeatureItem>
+              <FeatureItem>White-glove implementation service</FeatureItem>
             </ul>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* --- */}
+
+      {/* CTA Section - Strong Red Background */}
       <section
         id="cta"
-        className="bg-gradient-to-r from-red-600 to-red-500 text-white py-24 text-center"
+        className="bg-red-700 text-white py-20 text-center"
       >
-        <h2 className="text-4xl md:text-5xl font-bold mb-6">
-          Ready to Experience the Demo?
+        <h2 className="text-4xl font-bold mb-4">
+          Ready to Elevate Your Guest Experience?
         </h2>
-        <p className="text-lg max-w-2xl mx-auto mb-10">
-          Try our Hotel Order Management Software and see how it simplifies operations,
-          improves guest experience, and boosts efficiency.
+        <p className="text-lg text-red-100 max-w-3xl mx-auto mb-8">
+          Have specific requirements or need a tailored package? Reach out to our team to discuss the perfect fit for your hotel.
         </p>
         <a
-          href="#contact"
-          className="relative overflow-hidden border-2 border-white text-white px-10 py-3 rounded-lg font-medium transition-colors duration-300 ease-in-out group"
+          href="/contact"
+          className="inline-block bg-white text-red-700 px-10 py-3 rounded-lg font-semibold text-lg transition-all duration-300 hover:bg-gray-200 shadow-lg"
         >
-          <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out group-hover:scale-x-100 bg-white" />
-          <span className="relative z-10 group-hover:text-red-600">
-            Contact Us
-          </span>
+          Book our Samrt Solution
         </a>
       </section>
     </main>
   );
 }
-

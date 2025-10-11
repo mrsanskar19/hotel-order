@@ -98,14 +98,14 @@ food ordering, enhances guest satisfaction, and streamlines hotel and restaurant
           Let’s build something amazing together.
         </p>
 
-        {/* 🔴 Book Demo Button (with animated red hover) */}
+        {/* 🔴 Become our partners Button (with animated red hover) */}
         <Link
             href="/contact"
           className="relative inline-block overflow-hidden border-2 border-red-600 text-red-600 bg-transparent px-8 py-3 rounded-lg font-medium transition-colors duration-300 ease-in-out group"
         >
           <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out pointer-events-none z-0 group-hover:scale-x-100 bg-red-600" />
           <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
-            Book Demo
+          Book our Smart Solution
           </span>
         </Link>
       </section>

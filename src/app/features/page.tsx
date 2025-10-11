@@ -165,7 +165,7 @@ export default function FeaturePage() {
         >
           <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out group-hover:scale-x-100 bg-white" />
           <span className="relative z-10 group-hover:text-red-600">
-            Contact Us
+          Book our Smart Solution
           </span>
         </a>
       </section>

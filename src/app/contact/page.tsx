@@ -203,6 +203,7 @@ export default function ContactPage() {
                   <div>
                     <CardTitle className="text-xl">Email</CardTitle>
                     <p className="text-muted-foreground">foodlinkx.com@gmail.com</p>
+                    <p className="text-muted-foreground">foodlinkx@gmail.com</p>
                   </div>
                 </CardHeader>
               </Card>
