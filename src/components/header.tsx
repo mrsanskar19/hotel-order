@@ -69,7 +69,7 @@ export default function Header() {
   {/* transform-based background for GPU-accelerated smoothness */}
   <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out pointer-events-none z-0 group-hover:scale-x-100 bg-red-600" />
   <span className="relative z-10 inline-block px-4 py-2 transition-colors duration-300 group-hover:text-white">
-    Become our partners
+    Book our Smart Solution
   </span>
 </Button>
 
@@ -109,7 +109,7 @@ export default function Header() {
   {/* transform-based background for GPU-accelerated smoothness */}
   <span className="absolute inset-0 transform scale-x-0 origin-left transition-transform duration-300 ease-in-out pointer-events-none z-0 group-hover:scale-x-100 bg-red-600" />
   <span className="relative z-10 inline-block px-4 py-2 transition-colors duration-300 group-hover:text-white">
-    Become our partners
+  Book our Smart Solution
   </span>
 </Button>
 
