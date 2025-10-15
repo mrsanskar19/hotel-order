@@ -126,7 +126,10 @@ export default function PrivacyPage() {
             handle your data, please contact us at:
           </p>
           <p className="mt-2 text-gray-700 font-semibold">
-            📧 foodlinkx.com@gmail.com
+            📧 foodslinkX.com@gmail.com
+          </p>
+		   <p className="mt-2 text-gray-700 font-semibold">
+            📧 foodslinkx@gmail.com
           </p>
         </div>
       </section>

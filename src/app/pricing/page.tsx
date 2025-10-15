@@ -97,6 +97,7 @@ export default function PricingPage() {
               <FeatureItem>Simple, customizable menu portal</FeatureItem>
               <FeatureItem>Standard performance reports</FeatureItem>
               <FeatureItem>Email support (24-hour response)</FeatureItem>
+              <FeatureItem>Support for up to 10 tables</FeatureItem>
             </ul>
           </div>
 
@@ -123,6 +124,7 @@ export default function PricingPage() {
               <FeatureItem>Advanced analytics dashboard</FeatureItem>
               <FeatureItem>Dedicated account manager & priority support</FeatureItem>
               <FeatureItem>Guest feedback and rating system</FeatureItem>
+              <FeatureItem>Support for up to 10 tables</FeatureItem>
             </ul>
           </div>
 
@@ -161,7 +163,7 @@ export default function PricingPage() {
           Ready to Elevate Your Guest Experience?
         </h2>
         <p className="text-lg text-red-100 max-w-3xl mx-auto mb-8">
-          Have specific requirements or need a tailored package? Reach out to our team to discuss the perfect fit for your hotel.
+          Reach out to our team to discuss the perfect fit for your hotel.
         </p>
         <a
           href="/contact"
