@@ -140,7 +140,11 @@ export default function PricingPage() {
               Recommended
             </span>
             <Star className="w-8 h-8 text-red-600 mb-4" />
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Diamond (All-In-One)</h3>
+            <h3 className="text-2xl font-bold mb-2 text-gray-900">
+              Diamond
+              <br />
+              <span className="text-lg font-normal text-gray-600">(All-In-One)</span>
+            </h3>
             <p className="text-gray-600 mb-6 min-h-12">Best for top-tier restaurants, hotels, and café chains — everything unlocked.</p>
 
             <div className="flex items-baseline mb-8">
@@ -176,7 +180,7 @@ export default function PricingPage() {
                     <RupeeSymbol />
                     Custom
                 </p>
-                <p className="text-lg text-gray-500 font-medium">(Tailored to your needs)</p>
+                <p className="text-lg text-gray-500 font-medium"></p>
             </div>
 
             <ul className="space-y-3">
