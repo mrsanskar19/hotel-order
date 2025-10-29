@@ -215,7 +215,7 @@ export default function PricingPage() {
           href="/contact"
           className="inline-block bg-white text-red-700 px-10 py-3 rounded-lg font-semibold text-lg transition-all duration-300 hover:bg-gray-200 shadow-lg"
         >
-          Book our Samrt Solution
+          Book our Smart Solution
         </a>
       </section>
     </main>
