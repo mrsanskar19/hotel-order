@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { ShoppingBag, TrendingUp, Zap } from 'lucide-react'; // Using lucide-react for professional icons
+import { ShoppingBag, Star, TrendingUp, Zap } from 'lucide-react'; // Using lucide-react for professional icons
 
 export default function PricingPage() {
   const [visibleSections, setVisibleSections] = useState<string[]>([]);
@@ -77,76 +77,118 @@ export default function PricingPage() {
             Future-proof your operations with a plan built for growth.
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Basic Plan */}
-          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          {/* Starter Plan */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
             <Zap className="w-8 h-8 text-red-500 mb-4" />
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Basic</h3>
-            <p className="text-gray-500 mb-6 min-h-12">Ideal for small-scale operations and initial digitalization.</p>
+            <h3 className="text-2xl font-bold mb-2 text-gray-900">Starter</h3>
+            <p className="text-gray-500 mb-6 min-h-12">Perfect for small cafés, boutique hotels, and local dining spaces.</p>
 
             <div className="flex items-baseline mb-8">
                 <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
                     <RupeeSymbol />
-                    299.00
+                    599
                 </p>
                 <p className="text-lg text-gray-500 font-medium">/ month</p>
             </div>
 
-            <ul className="space-y-4">
-              <FeatureItem>Basic digital order management</FeatureItem>
-              <FeatureItem>Simple, customizable menu portal</FeatureItem>
-              <FeatureItem>Standard performance reports</FeatureItem>
-              <FeatureItem>Email support (24-hour response)</FeatureItem>
-              <FeatureItem>Support for up to 10 tables</FeatureItem>
+            <ul className="space-y-3">
+              <FeatureItem>Guest feedback & rating system</FeatureItem>
+              <FeatureItem>Basic SEO optimization</FeatureItem>
+              <FeatureItem>Customizable setup for hotels, cafés, and restaurants</FeatureItem>
+              <FeatureItem>Manage up to 10 tables or rooms</FeatureItem>
+              <FeatureItem>Real-time table booking system</FeatureItem>
+              <FeatureItem>Smart control panel for staff & admin</FeatureItem>
+              <FeatureItem>Full menu and inventory sync</FeatureItem>
+              <FeatureItem>Real-time order tracking with smart alerts</FeatureItem>
+              <FeatureItem>24/7 customer support</FeatureItem>
+              <FeatureItem>Dedicated account with monthly assistance</FeatureItem>
             </ul>
           </div>
 
-          {/* Premium Plan (Highlighted) */}
-          <div className="relative bg-white border-2 border-red-600 rounded-xl p-10 shadow-2xl scale-100 transition-all duration-500">
+          {/* Best Value (Pro) Plan */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+            <ShoppingBag className="w-8 h-8 text-red-500 mb-4" />
+            <h3 className="text-2xl font-bold mb-2 text-gray-900">Best Value (Pro)</h3>
+            <p className="text-gray-500 mb-6 min-h-12">Ideal for growing cafés, mid-sized hotels, and restaurants that want smarter control and insights.</p>
+
+            <div className="flex items-baseline mb-8">
+                <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
+                    <RupeeSymbol />
+                    1299
+                </p>
+                <p className="text-lg text-gray-500 font-medium">/ month</p>
+            </div>
+
+            <ul className="space-y-3">
+              <FeatureItem>Guest feedback & rating system + advanced SEO optimization</FeatureItem>
+              <FeatureItem>Supports up to 20 tables or rooms</FeatureItem>
+              <FeatureItem>Customizable system for multi-section management</FeatureItem>
+              <FeatureItem>Real-time table & room booking with instant synchronization</FeatureItem>
+              <FeatureItem>AI-powered smart control panel for staff & managers</FeatureItem>
+              <FeatureItem>Full menu, pricing, and inventory synchronization</FeatureItem>
+              <FeatureItem>Real-time order tracking & smart alerts</FeatureItem>
+              <FeatureItem>Advanced analytics dashboard with insights & performance reports</FeatureItem>
+              <FeatureItem>Priority onboarding & dedicated account manager</FeatureItem>
+              <FeatureItem>24/7 premium support</FeatureItem>
+            </ul>
+          </div>
+
+          {/* Diamond (All-In-One) Plan (Highlighted) */}
+          <div className="relative bg-white border-2 border-red-600 rounded-xl p-8 shadow-2xl scale-100 transition-all duration-500">
             <span className="absolute top-0 right-0 -mt-3 mr-6 bg-red-600 text-white text-xs px-4 py-1 rounded-full font-semibold uppercase tracking-wider shadow-md">
               Recommended
             </span>
-            <ShoppingBag className="w-8 h-8 text-red-600 mb-4" />
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Premium</h3>
-            <p className="text-gray-600 mb-6 min-h-12">The perfect blend of features for mid-sized hotels focusing on growth.</p>
+            <Star className="w-8 h-8 text-red-600 mb-4" />
+            <h3 className="text-2xl font-bold mb-2 text-gray-900">Diamond (All-In-One)</h3>
+            <p className="text-gray-600 mb-6 min-h-12">Best for top-tier restaurants, hotels, and café chains — everything unlocked.</p>
 
             <div className="flex items-baseline mb-8">
                 <p className="text-4xl font-bold text-red-600 mr-2 flex items-baseline">
                     <RupeeSymbol />
-                    499.00
+                    2499
                 </p>
                 <p className="text-lg text-gray-500 font-medium">/ month</p>
             </div>
-            
-            <ul className="space-y-4 mb-6">
-              <FeatureItem>Full menu and inventory synchronization</FeatureItem>
-              <FeatureItem>Real-time order tracking and smart alerts</FeatureItem>
-              <FeatureItem>Advanced analytics dashboard</FeatureItem>
-              <FeatureItem>Dedicated account manager & priority support</FeatureItem>
-              <FeatureItem>Guest feedback and rating system</FeatureItem>
-              <FeatureItem>Support for up to 10 tables</FeatureItem>
+
+            <ul className="space-y-3 mb-6">
+              <FeatureItem>All Pro features included</FeatureItem>
+              <FeatureItem>Manage up to 50 tables or rooms</FeatureItem>
+              <FeatureItem>Unlimited staff & device access</FeatureItem>
+              <FeatureItem>Advanced AI-driven analytics and growth insights</FeatureItem>
+              <FeatureItem>Smart automation tools for orders, billing, and service flow</FeatureItem>
+              <FeatureItem>Multi-location management with real-time sync</FeatureItem>
+              <FeatureItem>Custom digital menu design + QR ordering</FeatureItem>
+              <FeatureItem>Priority listings & featured placement in discovery pages</FeatureItem>
+              <FeatureItem>Dedicated success manager & 24/7 priority support</FeatureItem>
+              <FeatureItem>Monthly performance reports and growth consultation</FeatureItem>
             </ul>
           </div>
 
           {/* Enterprise Plan */}
-          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
             <TrendingUp className="w-8 h-8 text-red-500 mb-4" />
             <h3 className="text-2xl font-bold mb-2 text-gray-900">Enterprise</h3>
-            <p className="text-gray-500 mb-6 min-h-12">Comprehensive solution for large chains and complex operational structures.</p>
+            <p className="text-gray-500 mb-6 min-h-12">For large chains and complex operational structures.</p>
 
             <div className="flex items-baseline mb-8">
                 <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
                     <RupeeSymbol />
                     Custom
                 </p>
+                <p className="text-lg text-gray-500 font-medium">(Tailored to your needs)</p>
             </div>
-            
-            <ul className="space-y-4">
-              <FeatureItem>Multi-location and brand management</FeatureItem>
-              <FeatureItem>Custom API integrations (POS/CRM/PMS)</FeatureItem>
-              <FeatureItem>Predictive analytics and demand forecasting</FeatureItem>
+
+            <ul className="space-y-3">
+              <FeatureItem>Multi-location & brand management across all branches</FeatureItem>
+              <FeatureItem>Custom API integrations (POS, CRM, PMS, etc.)</FeatureItem>
+              <FeatureItem>Predictive analytics & demand forecasting for smarter decisions</FeatureItem>
+              <FeatureItem>Advanced automation & AI-based resource planning</FeatureItem>
               <FeatureItem>24/7/365 dedicated technical support</FeatureItem>
-              <FeatureItem>White-glove implementation service</FeatureItem>
+              <FeatureItem>White-glove onboarding and implementation service</FeatureItem>
+              <FeatureItem>Custom dashboards, reports, and role-based access controls</FeatureItem>
+              <FeatureItem>Scalable infrastructure for enterprise-grade performance</FeatureItem>
+              <FeatureItem>Dedicated success and integration manager</FeatureItem>
             </ul>
           </div>
         </div>
