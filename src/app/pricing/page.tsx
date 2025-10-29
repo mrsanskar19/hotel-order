@@ -143,7 +143,7 @@ export default function PricingPage() {
             <h3 className="text-2xl font-bold mb-2 text-gray-900">
               Diamond
               <br />
-              <span className="text-lg font-normal text-gray-600">(All-In-One)</span>
+              <span className="text-lg font-normal text-red-600">(All-In-One)</span>
             </h3>
             <p className="text-gray-600 mb-6 min-h-12">Best for top-tier restaurants, hotels, and café chains — everything unlocked.</p>
 
