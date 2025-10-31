@@ -63,20 +63,13 @@ export default function FeaturePage() {
               hospitality.
             </p>
           </div>
-          <div className="flex justify-center space-x-4">
-            <Image
-              src="/images/mission.jpg"
-              alt="Our Mission"
-              width={300}
-              height={200}
-              className="rounded-2xl shadow-lg w-full h-auto max-w-sm"
-            />
+          <div className="flex justify-center">
             <Image
               src="/images/mission2.jpg"
-              alt="Our Mission 2"
-              width={300}
-              height={200}
-              className="rounded-2xl shadow-lg w-full h-auto max-w-sm"
+              alt="Our Mission"
+              width={600}
+              height={400}
+              className="rounded-2xl shadow-lg w-full h-auto max-w-md"
             />
           </div>
         </div>
