@@ -131,6 +131,21 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-CYL0VF58MX"
+          strategy="afterInteractive"
+        />
+        
+        {/* 2. Initialize Google Analytics */}
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-CYL0VF58MX');
+          `}
+        </Script>
+        
         <div className="relative flex min-h-screen flex-col">
           <Header />
           <main className="flex-1">{children}</main>
