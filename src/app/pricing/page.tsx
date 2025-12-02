@@ -1,13 +1,137 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { ShoppingBag, Star, TrendingUp, Zap } from 'lucide-react'; // Using lucide-react for professional icons
+import { ShoppingBag, Star, TrendingUp, Zap, Check, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+
+// --- Types & Data ---
+
+type PricingPlan = {
+  id: string;
+  title: string;
+  subtitle: string;
+  price: string;
+  period: string;
+  icon: React.ElementType;
+  description: string;
+  features: string[];
+  recommended?: boolean;
+  buttonText: string;
+  buttonLink: string;
+};
+
+const PRICING_PLANS: PricingPlan[] = [
+  {
+    id: 'starter',
+    title: 'Starter',
+    subtitle: 'For small cafés & boutiques',
+    price: '599',
+    period: '/ month',
+    icon: Zap,
+    description: 'Essential tools to digitize your menu and manage basic orders.',
+    buttonText: 'Get Started',
+    buttonLink: '/login',
+    features: [
+      'Guest feedback & rating system',
+      'Basic SEO optimization',
+      'Manage up to 10 tables or rooms',
+      'Real-time table booking system',
+      'Smart control panel for staff',
+      'Full menu & inventory sync',
+      'Order tracking with alerts',
+      '24/7 customer support',
+    ],
+  },
+  {
+    id: 'pro',
+    title: 'Pro',
+    subtitle: 'Best Value',
+    price: '1299',
+    period: '/ month',
+    icon: ShoppingBag,
+    description: 'Advanced insights and control for growing hotels and restaurants.',
+    buttonText: 'Upgrade to Pro',
+    buttonLink: '/contact',
+    features: [
+      'Everything in Starter',
+      'Supports up to 20 tables/rooms',
+      'Multi-section management',
+      'AI-powered staff control panel',
+      'Real-time inventory sync',
+      'Advanced analytics dashboard',
+      'Priority onboarding',
+      'Dedicated account manager',
+    ],
+  },
+  {
+    id: 'diamond',
+    title: 'Diamond',
+    subtitle: 'All-In-One',
+    price: '2499',
+    period: '/ month',
+    icon: Star,
+    recommended: true,
+    description: 'Unrestricted access for top-tier establishments and chains.',
+    buttonText: 'Go Diamond',
+    buttonLink: '/login',
+    features: [
+      'Everything in Pro',
+      'Manage up to 50 tables/rooms',
+      'Unlimited staff & devices',
+      'AI-driven growth insights',
+      'Automated billing & service flow',
+      'Multi-location management',
+      'Custom digital menu design',
+      'Priority listings in discovery',
+    ],
+  },
+  {
+    id: 'enterprise',
+    title: 'Enterprise',
+    subtitle: 'Custom Solutions',
+    price: 'Custom',
+    period: '',
+    icon: TrendingUp,
+    description: 'Tailored infrastructure for large chains and complex operations.',
+    buttonText: 'Contact Sales',
+    buttonLink: '/contact',
+    features: [
+      'Multi-brand management',
+      'Custom API integrations (POS/PMS)',
+      'Predictive analytics & forecasting',
+      'AI-based resource planning',
+      'White-glove implementation',
+      'Custom role-based access',
+      'Dedicated success manager',
+      'SLA & 24/7 Priority Support',
+    ],
+  },
+];
+
+// --- Components ---
+
+const RupeeSymbol = () => (
+  <span className="text-2xl md:text-3xl font-light text-gray-400 mr-1 font-serif">₹</span>
+);
+
+const FeatureItem = ({ children }: { children: React.ReactNode }) => (
+  <li className="flex items-start space-x-3 text-sm text-gray-600">
+    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-50 text-red-600 flex items-center justify-center mt-0.5">
+      <Check className="w-3 h-3" strokeWidth={3} />
+    </div>
+    <span className="leading-relaxed">{children}</span>
+  </li>
+);
+
+// --- Main Page Component ---
 
 export default function PricingPage() {
+  const [isYearly, setIsYearly] = useState(false); // Interactive Toggle State
   const [visibleSections, setVisibleSections] = useState<string[]>([]);
 
-  // Intersection Observer for scroll animation
+  // Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -17,206 +141,187 @@ export default function PricingPage() {
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
 
     document.querySelectorAll('.observe').forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
 
-  // Helper component for plan feature list
-  const FeatureItem: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <li className="flex items-start space-x-3">
-      {/* Red checkmark for the feature list */}
-      <svg className="flex-shrink-0 w-5 h-5 text-red-600 mt-1" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-      </svg>
-      <span className="text-gray-700">{children}</span>
-    </li>
-  );
-
-  // Helper for the Rupee symbol
-  const RupeeSymbol = () => (
-    <span className="text-3xl font-normal text-gray-400 mr-1 mt-1 font-serif">
-      ₹
-    </span>
-  );
-
   return (
-    <main className="min-h-screen w-full bg-gray-50 text-gray-900 font-sans">
-      {/* Hero Section - Bold Red Accent */}
-      <section className="relative flex flex-col items-center justify-center h-[60vh] text-center overflow-hidden bg-white shadow-sm border-b border-red-100">
-        <div className="py-20 px-6">
-            <p className="text-sm font-semibold uppercase tracking-wider text-red-600 mb-3">
-                Solutions for Every Scale
-            </p>
-            <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900">
-                Transparent Pricing
-            </h1>
-            <p className="mt-6 text-xl text-gray-500 max-w-3xl mx-auto">
-              Choose the plan that best aligns with your business goals. Scalable features
-              designed to optimize operational efficiency and guest satisfaction.
-            </p>
+    <main className="min-h-screen w-full bg-gray-50 text-gray-900 font-sans overflow-x-hidden">
+      
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden bg-white border-b border-red-50">
+        {/* Abstract Background Blobs */}
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-red-50 to-transparent opacity-50" />
+        <div className="absolute top-20 left-10 w-64 h-64 bg-red-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
+        
+        <div className="relative z-10 text-center max-w-4xl mx-auto space-y-6">
+          <div className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1 text-sm font-medium text-red-600 animate-fadeInDown">
+            <span className="flex h-2 w-2 rounded-full bg-red-600 mr-2 animate-pulse" />
+            Flexible Plans for Every Stage
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight leading-tight animate-fadeInUp">
+            Transparent Pricing, <br />
+            <span className="bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">
+              Powerful Results
+            </span>
+          </h1>
+          
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed animate-fadeInUp delay-100">
+            Choose the plan that best aligns with your business goals. 
+            No hidden fees, just scalable features designed for growth.
+          </p>
+
+          {/* Interactive Toggle (Visual Only for Demo) */}
+          {/* <div className="flex items-center justify-center mt-10 space-x-4 animate-fadeInUp delay-200">
+            <span className={cn("text-sm font-semibold cursor-pointer transition-colors", !isYearly ? "text-gray-900" : "text-gray-400")} onClick={() => setIsYearly(false)}>Monthly</span>
+            <div 
+              className="w-14 h-8 bg-red-600 rounded-full p-1 cursor-pointer transition-all duration-300 relative"
+              onClick={() => setIsYearly(!isYearly)}
+            >
+              <div className={cn("w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300", isYearly ? "translate-x-6" : "translate-x-0")} />
+            </div>
+            <span className={cn("text-sm font-semibold cursor-pointer transition-colors", isYearly ? "text-gray-900" : "text-gray-400")} onClick={() => setIsYearly(true)}>
+              Yearly <span className="text-red-600 text-xs ml-1 font-bold">(Save 20%)</span>
+            </span>
+          </div> */}
         </div>
       </section>
 
-      {/* --- */}
-
-      {/* Pricing Section - Structured and Professional Red Theme */}
+      {/* Pricing Grid */}
       <section
         id="plans"
         className={cn(
-          'observe container mx-auto py-24 px-6 opacity-0 translate-y-10 transition-all duration-700',
-          visibleSections.includes('plans') && 'opacity-100 translate-y-0'
+          'observe container mx-auto py-20 px-6 transition-all duration-1000 ease-out transform',
+          visibleSections.includes('plans') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
         )}
       >
-        <h2 className="text-4xl font-bold text-center mb-4 text-gray-800">
-            Our Service Tiers
-        </h2>
-        <p className="text-center text-lg text-gray-500 mb-16">
-            Future-proof your operations with a plan built for growth.
-        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8">
+          {PRICING_PLANS.map((plan, index) => (
+            <div
+              key={plan.id}
+              className={cn(
+                "relative group flex flex-col p-8 rounded-3xl transition-all duration-500 border bg-white",
+                plan.recommended 
+                  ? "border-red-500 shadow-2xl scale-100 z-10 xl:-mt-4 xl:mb-4" 
+                  : "border-gray-200 shadow-lg hover:shadow-xl hover:scale-[1.02] hover:border-red-200"
+              )}
+            >
+              {/* Recommended Badge */}
+              {plan.recommended && (
+                <div className="absolute top-0 right-0 left-0 -mt-5 flex justify-center">
+                  <span className="bg-red-600 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-md">
+                    Most Popular
+                  </span>
+                </div>
+              )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {/* Starter Plan */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
-            <Zap className="w-8 h-8 text-red-500 mb-4" />
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Starter</h3>
-            <p className="text-gray-500 mb-6 min-h-12">Perfect for small cafés, boutique hotels, and local dining spaces.</p>
+              {/* Card Header */}
+              <div className="mb-6">
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors duration-300",
+                  plan.recommended ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-600 group-hover:bg-red-50 group-hover:text-red-600"
+                )}>
+                  <plan.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">{plan.title}</h3>
+                <p className="text-sm text-gray-500 mt-1">{plan.subtitle}</p>
+              </div>
 
-            <div className="flex items-baseline mb-8">
-                <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
-                    <RupeeSymbol />
-                    599
-                </p>
-                <p className="text-lg text-gray-500 font-medium">/ month</p>
+              {/* Description */}
+              <p className="text-gray-600 text-sm mb-6 leading-relaxed min-h-[40px]">
+                {plan.description}
+              </p>
+
+              {/* Price */}
+              <div className="mb-8">
+                <div className="flex items-baseline">
+                   {plan.price !== 'Custom' && <RupeeSymbol />}
+                   <span className={cn("font-bold tracking-tight text-gray-900", plan.price === 'Custom' ? "text-4xl" : "text-5xl")}>
+                     {plan.price}
+                   </span>
+                </div>
+                {plan.period && <p className="text-gray-400 font-medium mt-1">{plan.period}</p>}
+              </div>
+
+              {/* Action Button */}
+              <Link href={plan.buttonLink} className="w-full">
+                <Button 
+                  className={cn(
+                    "w-full py-6 text-base font-semibold transition-all duration-300 mb-8",
+                    plan.recommended 
+                      ? "bg-red-600 hover:bg-red-700 hover:text-white shadow-lg shadow-red-200"
+                      : "bg-white border-2 border-gray-200 text-gray-900 hover:border-red-600 hover:text-white"
+                  )}
+                >
+                  {plan.buttonText}
+                </Button>
+              </Link>
+
+              {/* Features List */}
+              <div className="flex-grow">
+                <p className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">What's included:</p>
+                <ul className="space-y-4">
+                  {plan.features.map((feature, i) => (
+                    <FeatureItem key={i}>{feature}</FeatureItem>
+                  ))}
+                </ul>
+              </div>
             </div>
-
-            <ul className="space-y-3">
-              <FeatureItem>Guest feedback & rating system</FeatureItem>
-              <FeatureItem>Basic SEO optimization</FeatureItem>
-              <FeatureItem>Customizable setup for hotels, cafés, and restaurants</FeatureItem>
-              <FeatureItem>Manage up to 10 tables or rooms</FeatureItem>
-              <FeatureItem>Real-time table booking system</FeatureItem>
-              <FeatureItem>Smart control panel for staff & admin</FeatureItem>
-              <FeatureItem>Full menu and inventory sync</FeatureItem>
-              <FeatureItem>Real-time order tracking with smart alerts</FeatureItem>
-              <FeatureItem>24/7 customer support</FeatureItem>
-              <FeatureItem>Dedicated account with monthly assistance</FeatureItem>
-            </ul>
-          </div>
-
-          {/* Best Value (Pro) Plan */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
-            <ShoppingBag className="w-8 h-8 text-red-500 mb-4" />
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Best Value (Pro)</h3>
-            <p className="text-gray-500 mb-6 min-h-12">Ideal for growing cafés, mid-sized hotels, and restaurants that want smarter control and insights.</p>
-
-            <div className="flex items-baseline mb-8">
-                <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
-                    <RupeeSymbol />
-                    1299
-                </p>
-                <p className="text-lg text-gray-500 font-medium">/ month</p>
-            </div>
-
-            <ul className="space-y-3">
-              <FeatureItem>Guest feedback & rating system + advanced SEO optimization</FeatureItem>
-              <FeatureItem>Supports up to 20 tables or rooms</FeatureItem>
-              <FeatureItem>Customizable system for multi-section management</FeatureItem>
-              <FeatureItem>Real-time table & room booking with instant synchronization</FeatureItem>
-              <FeatureItem>AI-powered smart control panel for staff & managers</FeatureItem>
-              <FeatureItem>Full menu, pricing, and inventory synchronization</FeatureItem>
-              <FeatureItem>Real-time order tracking & smart alerts</FeatureItem>
-              <FeatureItem>Advanced analytics dashboard with insights & performance reports</FeatureItem>
-              <FeatureItem>Priority onboarding & dedicated account manager</FeatureItem>
-              <FeatureItem>24/7 premium support</FeatureItem>
-            </ul>
-          </div>
-
-          {/* Diamond (All-In-One) Plan (Highlighted) */}
-          <div className="relative bg-white border-2 border-red-600 rounded-xl p-8 shadow-2xl scale-100 transition-all duration-500">
-            <span className="absolute top-0 right-0 -mt-3 mr-6 bg-red-600 text-white text-xs px-4 py-1 rounded-full font-semibold uppercase tracking-wider shadow-md">
-              Recommended
-            </span>
-            <Star className="w-8 h-8 text-red-600 mb-4" />
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">
-              Diamond
-              <br />
-              <span className="text-lg font-normal text-red-600">(All-In-One)</span>
-            </h3>
-            <p className="text-gray-600 mb-6 min-h-12">Best for top-tier restaurants, hotels, and café chains — everything unlocked.</p>
-
-            <div className="flex items-baseline mb-8">
-                <p className="text-4xl font-bold text-red-600 mr-2 flex items-baseline">
-                    <RupeeSymbol />
-                    2499
-                </p>
-                <p className="text-lg text-gray-500 font-medium">/ month</p>
-            </div>
-
-            <ul className="space-y-3 mb-6">
-              <FeatureItem>All Pro features included</FeatureItem>
-              <FeatureItem>Manage up to 50 tables or rooms</FeatureItem>
-              <FeatureItem>Unlimited staff & device access</FeatureItem>
-              <FeatureItem>Advanced AI-driven analytics and growth insights</FeatureItem>
-              <FeatureItem>Smart automation tools for orders, billing, and service flow</FeatureItem>
-              <FeatureItem>Multi-location management with real-time sync</FeatureItem>
-              <FeatureItem>Custom digital menu design + QR ordering</FeatureItem>
-              <FeatureItem>Priority listings & featured placement in discovery pages</FeatureItem>
-              <FeatureItem>Dedicated success manager & 24/7 priority support</FeatureItem>
-              <FeatureItem>Monthly performance reports and growth consultation</FeatureItem>
-            </ul>
-          </div>
-
-          {/* Enterprise Plan */}
-          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02]">
-            <TrendingUp className="w-8 h-8 text-red-500 mb-4" />
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Enterprise</h3>
-            <p className="text-gray-500 mb-6 min-h-12">For large chains and complex operational structures.</p>
-
-            <div className="flex items-baseline mb-8">
-                <p className="text-4xl font-bold text-gray-800 mr-2 flex items-baseline">
-                    <RupeeSymbol />
-                    Custom
-                </p>
-                <p className="text-lg text-gray-500 font-medium"></p>
-            </div>
-
-            <ul className="space-y-3">
-              <FeatureItem>Multi-location & brand management across all branches</FeatureItem>
-              <FeatureItem>Custom API integrations (POS, CRM, PMS, etc.)</FeatureItem>
-              <FeatureItem>Predictive analytics & demand forecasting for smarter decisions</FeatureItem>
-              <FeatureItem>Advanced automation & AI-based resource planning</FeatureItem>
-              <FeatureItem>24/7/365 dedicated technical support</FeatureItem>
-              <FeatureItem>White-glove onboarding and implementation service</FeatureItem>
-              <FeatureItem>Custom dashboards, reports, and role-based access controls</FeatureItem>
-              <FeatureItem>Scalable infrastructure for enterprise-grade performance</FeatureItem>
-              <FeatureItem>Dedicated success and integration manager</FeatureItem>
-            </ul>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* --- */}
+      {/* FAQ / Trust Section */}
+      <section className="bg-white py-20 border-t border-gray-100">
+         <div className="container mx-auto px-6 text-center max-w-4xl">
+             <h2 className="text-3xl font-bold mb-12">Why Choose FoodsLinkX?</h2>
+             <div className="grid md:grid-cols-3 gap-8">
+                 <div className="p-6 rounded-xl bg-gray-50 hover:bg-red-50 transition-colors duration-300">
+                    <h3 className="font-bold text-lg mb-2">No Hidden Fees</h3>
+                    <p className="text-gray-600 text-sm">We believe in transparency. The price you see is the price you pay.</p>
+                 </div>
+                 <div className="p-6 rounded-xl bg-gray-50 hover:bg-red-50 transition-colors duration-300">
+                    <h3 className="font-bold text-lg mb-2">Cancel Anytime</h3>
+                    <p className="text-gray-600 text-sm">No long-term contracts for monthly plans. Upgrade or downgrade as needed.</p>
+                 </div>
+                 <div className="p-6 rounded-xl bg-gray-50 hover:bg-red-50 transition-colors duration-300">
+                    <h3 className="font-bold text-lg mb-2">Free Setup</h3>
+                    <p className="text-gray-600 text-sm">Our team helps you digitize your menu and get started for free.</p>
+                 </div>
+             </div>
+         </div>
+      </section>
 
-      {/* CTA Section - Strong Red Background */}
+      {/* CTA Section */}
       <section
         id="cta"
-        className="bg-red-700 text-white py-20 text-center"
+        className="relative bg-red-700 text-white py-24 text-center overflow-hidden"
       >
-        <h2 className="text-4xl font-bold mb-4">
-          Ready to Elevate Your Guest Experience?
-        </h2>
-        <p className="text-lg text-red-100 max-w-3xl mx-auto mb-8">
-          Reach out to our team to discuss the perfect fit for your hotel.
-        </p>
-        <a
-          href="/contact"
-          className="inline-block bg-white text-red-700 px-10 py-3 rounded-lg font-semibold text-lg transition-all duration-300 hover:bg-gray-200 shadow-lg"
-        >
-          Book our Smart Solution
-        </a>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-600 to-red-800" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        
+        <div className="relative z-10 container mx-auto px-6">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+            Ready to Transform Your Hotel?
+          </h2>
+          <p className="text-lg md:text-xl text-red-100 max-w-2xl mx-auto mb-10">
+            Join hundreds of hotels optimizing their operations with FoodsLinkX. 
+            Book a personalized demo today.
+          </p>
+          
+          <Link href="/contact">
+            <button className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-red-600 transition-all duration-300 bg-white rounded-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] overflow-hidden">
+                <span className="absolute inset-0 w-full h-full bg-gray-100 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
+                <span className="relative z-10 flex items-center">
+                   Book our Smart Solution <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+            </button>
+          </Link>
+        </div>
       </section>
     </main>
   );
